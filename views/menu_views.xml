@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Thêm menu Mức Lương vào Configuration > Job Positions -->
+    <menuitem
+        id="menu_hr_recruitment_salary_level"
+        name="Mức Lương"
+        parent="hr_recruitment.menu_hr_recruitment_config_jobs"
+        action="action_hr_recruitment_salary_level"
+        sequence="3"
+        groups="hr_recruitment_pro.salary_group_user"/>
+
+</odoo>

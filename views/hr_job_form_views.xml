@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Thêm field Mức Lương vào form Job Edit-->
+    <record id="view_hr_job_form_inherit_salary_level" model="ir.ui.view">
+        <field name="name">hr.job.form.inherit.salary.level</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="arch" type="xml">
+            <!-- Thêm vào group Contract -->
+            <xpath expr="//group[@name='contract']" position="inside">
+                <field name="salary_level_id" string="Mức Lương"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

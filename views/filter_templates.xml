@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Salary Filter Template for Website -->
+    <template id="job_filter_by_salary" inherit_id="website_hr_recruitment.topbar_customizations"
+              active="True" priority="45">
+        <xpath expr="//div[hasclass('o_jobs_topbar_search_bar')]" position="before">
+            <div class="dropdown d-none d-lg-block">
+                <t t-set="salary_levels" t-value="request.env['hr.recruitment.salary.level'].sudo().search([('active', '=', True)], order='sequence')"/>
+                <t t-set="current_salary_id" t-value="salary_level_id.id if salary_level_id else None"/>
+                <button type="button" class="btn btn-light dropdown-toggle"
+                        data-bs-toggle="dropdown">
+                    <t t-if="salary_level_id">
+                        <t t-out="salary_level_id.name"/>
+                    </t>
+                    <t t-else="">Mức Lương</t>
+                </button>
+                <div class="dropdown-menu w-100 w-md-auto">
+                    <a t-attf-href="/jobs#{'?search=' + search if search else ''}"
+                       t-attf-class="dropdown-item#{' active' if not current_salary_id else ''}">
+                        Tất cả mức lương
+                    </a>
+                    <t t-foreach="salary_levels" t-as="level">
+                        <a t-attf-href="/jobs?salary_level_id=#{level.id}#{'&amp;search=' + search if search else ''}"
+                           t-attf-class="dropdown-item#{' active' if current_salary_id == level.id else ''}">
+                            <t t-out="level.name"/>
+                            <span class="text-muted ms-1">
+                                (<t t-out="'{0:,.0f}'.format(level.min_salary)"/> - <t t-out="'{0:,.0f}'.format(level.max_salary)"/> VND)
+                            </span>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Thêm hiển thị mức lương trong job card -->
+<!--    <template id="job_salary_badge" inherit_id="website_hr_recruitment.job_card"-->
+<!--              active="True" priority="50">-->
+<!--        <xpath expr="//div[hasclass('o_job_location')]" position="after">-->
+<!--            <t t-if="job.salary_level_id">-->
+<!--                <div class="o_job_location text-muted small">-->
+<!--                    <i class="fa fa-money me-1"/>-->
+<!--                    <t t-out="job.salary_level_id.name"/>-->
+<!--                </div>-->
+<!--            </t>-->
+<!--        </xpath>-->
+<!--    </template>-->
+
+</odoo>

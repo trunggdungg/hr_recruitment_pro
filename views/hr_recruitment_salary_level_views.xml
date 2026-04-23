@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action cho Mức Lương -->
+    <record id="action_hr_recruitment_salary_level" model="ir.actions.act_window">
+        <field name="name">Mức Lương</field>
+        <field name="res_model">hr.recruitment.salary.level</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo mức lương đầu tiên
+            </p>
+            <p>
+                VD: Dưới 10 triệu, 10-20 triệu, 20-30 triệu...
+            </p>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_hr_recruitment_salary_level_list" model="ir.ui.view">
+        <field name="name">hr.recruitment.salary.level.list</field>
+        <field name="model">hr.recruitment.salary.level</field>
+        <field name="arch" type="xml">
+            <list editable="top" decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="min_salary" string="Từ (VND)"/>
+                <field name="max_salary" string="Đến (VND)"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_hr_recruitment_salary_level_form" model="ir.ui.view">
+        <field name="name">hr.recruitment.salary.level.form</field>
+        <field name="model">hr.recruitment.salary.level</field>
+        <field name="arch" type="xml">
+            <form string="Mức Lương">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="VD: Dưới 10 triệu"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="min_salary" string="Lương tối thiểu (VND)"/>
+                            <field name="max_salary" string="Lương tối đa (VND)"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_hr_recruitment_salary_level_search" model="ir.ui.view">
+        <field name="name">hr.recruitment.salary.level.search</field>
+        <field name="model">hr.recruitment.salary.level</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm mức lương">
+                <field name="name"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

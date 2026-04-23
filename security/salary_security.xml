@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="salary_group_user" model="res.groups">
+        <field name="name">Salary Security User</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="salary_group_manager" model="res.groups">
+        <field name="name">Salary Security Manager</field>
+        <field name="implied_ids" eval="[(4, ref('hr_recruitment_pro.salary_group_user'))]"/>
+    </record>
+
+</odoo>
