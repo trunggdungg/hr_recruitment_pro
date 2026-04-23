@@ -10,6 +10,7 @@
             <!-- Thêm vào group Contract -->
             <xpath expr="//group[@name='contract']" position="inside">
                 <field name="salary_level_id" string="Mức Lương"/>
+                <field name="location_id" string="Địa Điểm"/>
             </xpath>
         </field>
     </record>

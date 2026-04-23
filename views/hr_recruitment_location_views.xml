@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action cho Địa Điểm -->
+    <record id="action_hr_recruitment_location" model="ir.actions.act_window">
+        <field name="name">Địa Điểm</field>
+        <field name="res_model">hr.recruitment.location</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo địa điểm đầu tiên
+            </p>
+            <p>
+                VD: Hà Nội, Hồ Chí Minh, Remote...
+            </p>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_hr_recruitment_location_list" model="ir.ui.view">
+        <field name="name">hr.recruitment.location.list</field>
+        <field name="model">hr.recruitment.location</field>
+        <field name="arch" type="xml">
+            <list editable="top" decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="city"/>
+                <field name="district"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_hr_recruitment_location_form" model="ir.ui.view">
+        <field name="name">hr.recruitment.location.form</field>
+        <field name="model">hr.recruitment.location</field>
+        <field name="arch" type="xml">
+            <form string="Địa Điểm">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="VD: Văn phòng Hà Nội"/>
+                            <field name="city" placeholder="VD: Hà Nội"/>
+                        </group>
+                        <group>
+                            <field name="district" placeholder="VD: Quận Đống Đa"/>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="address" placeholder="VD: Tầng 10, Tòa nhà ABC, 123 Nguyễn Huệ"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_hr_recruitment_location_search" model="ir.ui.view">
+        <field name="name">hr.recruitment.location.search</field>
+        <field name="model">hr.recruitment.location</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm địa điểm">
+                <field name="name"/>
+                <field name="city"/>
+                <field name="district"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

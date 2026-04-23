@@ -10,4 +10,13 @@
         sequence="3"
         groups="hr_recruitment_pro.salary_group_user"/>
 
+    <!-- Thêm menu Địa Điểm vào Configuration > Job Positions -->
+    <menuitem
+        id="menu_hr_recruitment_location"
+        name="Địa Điểm"
+        parent="hr_recruitment.menu_hr_recruitment_config_jobs"
+        action="action_hr_recruitment_location"
+        sequence="4"
+        groups="hr_recruitment_pro.salary_group_user"/>
+
 </odoo>

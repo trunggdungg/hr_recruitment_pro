@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="location_group_user" model="res.groups">
+        <field name="name">Location Security User</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="location_group_manager" model="res.groups">
+        <field name="name">Location Security Manager</field>
+        <field name="implied_ids" eval="[(4, ref('hr_recruitment_pro.location_group_user'))]"/>
+    </record>
+
+</odoo>

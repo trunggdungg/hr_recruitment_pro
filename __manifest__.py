@@ -2,9 +2,9 @@
 {
     'name': 'Hr Recruitment Pro',
     'version': '1.0',
-    'summary': 'Custom HR Recruitment with Salary Filter',
+    'summary': 'Custom HR Recruitment with Salary and Location Filters',
     'description': '''
-        Custom HR Recruitment module with salary level configuration and website filter.
+        Custom HR Recruitment module with salary level and location configuration and website filters.
     ''',
     'category': 'Recruitment',
     'author': 'Your Company',
@@ -14,13 +14,16 @@
     'depends': ['website_hr_recruitment'],
     'data': [
         'security/salary_security.xml',
+        'security/location_security.xml',
         'security/ir.model.access.csv',
 
         'views/hr_recruitment_pro_web_views.xml',
-        'views/filter_templates.xml',
+        'views/hr_recruitment_salary_filter.xml',
+        'views/hr_recruitment_location_filter.xml',
         'views/salary_inject_script.xml',
         'views/hr_job_form_views.xml',
         'views/hr_recruitment_salary_level_views.xml',
+        'views/hr_recruitment_location_views.xml',
         'views/menu_views.xml',
 
     ],

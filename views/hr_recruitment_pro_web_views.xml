@@ -94,12 +94,16 @@
                                                             <t t-out="job.no_of_recruitment"/>
                                                             vị trí
                                                         </span>
-                                                        <span t-if="job.address_id and job.address_id.city"
-                                                              class="o_job_tag">
-                                                            <t t-out="job.address_id.city"/>
+                                                        <span t-if="job.location_id" class="o_job_tag">
+                                                            <i class="fa fa-map-marker me-1"/>
+                                                            <t t-out="job.location_id.name"/>
                                                         </span>
-                                                        <span t-if="not job.address_id or not job.address_id.city"
+                                                        <span t-elif="job.location_id and job.location_id.city"
                                                               class="o_job_tag">
+                                                            <i class="fa fa-map-marker me-1"/>
+                                                            <t t-out="job.location_id.city"/>
+                                                        </span>
+                                                        <span t-else="" class="o_job_tag">
                                                             Remote
                                                         </span>
                                                         <span t-if="job.contract_type_id" class="o_job_tag">

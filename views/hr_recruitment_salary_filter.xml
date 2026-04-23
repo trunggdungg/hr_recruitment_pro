@@ -17,6 +17,9 @@
             <t t-if="request.params.get('office_id')">
                 <t t-set="salary_domain" t-value="salary_domain + [('address_id', '=', int(request.params.get('office_id')))]"/>
             </t>
+            <t t-if="request.params.get('location_id')">
+                <t t-set="salary_domain" t-value="salary_domain + [('location_id', '=', int(request.params.get('location_id')))]"/>
+            </t>
 
             <t t-set="salary_levels" t-value="request.env['hr.recruitment.salary.level'].sudo().search([('active', '=', True)], order='sequence')"/>
             <t t-set="job_counts" t-value="{g['salary_level_id'][0]: g['salary_level_id_count'] for g in request.env['hr.job'].sudo().read_group(salary_domain, ['salary_level_id'], ['salary_level_id'])}"/>

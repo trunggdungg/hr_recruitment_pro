@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_salary_user,access.salary.user,model_hr_recruitment_salary_level,hr_recruitment_pro.salary_group_user,1,1,1,0
 access_salary_manager,access.salary.manager,model_hr_recruitment_salary_level,hr_recruitment_pro.salary_group_manager,1,1,1,1
+access_location_user,access.location.user,model_hr_recruitment_location,hr_recruitment_pro.location_group_user,1,1,1,0
+access_location_manager,access.location.manager,model_hr_recruitment_location,hr_recruitment_pro.location_group_manager,1,1,1,1

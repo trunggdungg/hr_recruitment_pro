@@ -12,3 +12,9 @@ class HrJobInherit(models.Model):
         tracking=True,
         help='Chọn mức lương cho vị trí tuyển dụng'
     )
+    location_id = fields.Many2one(
+        'hr.recruitment.location',
+        string='Địa Điểm',
+        tracking=True,
+        help='Chọn địa điểm làm việc'
+    )
