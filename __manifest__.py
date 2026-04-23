@@ -18,6 +18,7 @@
 
         'views/hr_recruitment_pro_web_views.xml',
         'views/filter_templates.xml',
+        'views/salary_inject_script.xml',
         'views/hr_job_form_views.xml',
         'views/hr_recruitment_salary_level_views.xml',
         'views/menu_views.xml',

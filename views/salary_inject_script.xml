@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="keep_salary_in_other_filters" inherit_id="website_hr_recruitment.index">
+        <xpath expr="//div[@id='oe_structure_hr_recruitment_index_bottom']" position="after">
+            <script type="text/javascript"><![CDATA[
+                (function () {
+                    var params = new URLSearchParams(window.location.search);
+                    var salaryId = params.get('salary_level_id');
+                    if (!salaryId) return;
+
+                    function injectSalaryParam() {
+                        var topbar = document.querySelector('.o_wevent_index_topbar_filters');
+                        if (!topbar) return;
+
+                        var dropdownMenus = topbar.querySelectorAll('.dropdown .dropdown-menu');
+                        dropdownMenus.forEach(function(menu) {
+                            var links = menu.querySelectorAll('a.dropdown-item');
+                            if (!links.length) return;
+
+                            var isSalaryMenu = false;
+                            if (links.length > 1) {
+                                var secondHref = links[1].getAttribute('href') || '';
+                                if (secondHref.includes('salary_level_id')) {
+                                    isSalaryMenu = true;
+                                }
+                            }
+                            if (isSalaryMenu) return;
+
+                            links.forEach(function(link) {
+                                try {
+                                    var href = link.getAttribute('href');
+                                    if (!href) return;
+                                    var url = new URL(href, window.location.origin);
+                                    url.searchParams.set('salary_level_id', salaryId);
+                                    link.setAttribute('href', url.toString());
+                                } catch(e) {}
+                            });
+                        });
+                    }
+
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', injectSalaryParam);
+                    } else {
+                        injectSalaryParam();
+                    }
+                })();
+            ]]></script>
+        </xpath>
+    </template>
+</odoo>
