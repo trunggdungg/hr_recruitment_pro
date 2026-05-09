@@ -25,11 +25,17 @@
         'views/hr_recruitment_salary_level_views.xml',
         'views/hr_recruitment_location_views.xml',
         'views/menu_views.xml',
+        'views/res_partner_views.xml',
+        'views/recruitment_portal_views.xml',
+        'views/portal_applicant_detail.xml',
+        'views/job_detail_views.xml',
 
     ],
     'assets': {
         'web.assets_frontend': [
             'hr_recruitment_pro/static/src/css/job_web_view.css',
+            'hr_recruitment_pro/static/src/css/recruitment_portal.css',
+            'hr_recruitment_pro/static/src/js/portal_create_job.js',
         ],
     },
     'license': 'LGPL-3',
