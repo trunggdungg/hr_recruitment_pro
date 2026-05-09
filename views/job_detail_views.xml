@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             TRANG CHI TIẾT JOB CÔNG KHAI
+             URL: /recruitment/detail/<job_id>
+        ================================================================ -->
+        <template id="job_detail_public" name="Chi tiết việc làm">
+            <t t-call="website.layout">
+                <div class="o_job_detail_wrapper">
+
+                    <!-- Job Header -->
+                    <div class="job-detail-header bg-primary text-white py-5">
+                        <div class="container">
+                            <nav aria-label="breadcrumb" class="mb-3">
+                                <ol class="breadcrumb mb-0">
+                                    <li class="breadcrumb-item">
+                                        <a href="/jobs" class="text-white-50 text-decoration-none">
+                                            <i class="fa fa-home"></i> Trang chủ
+                                        </a>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <a href="/jobs" class="text-white-50 text-decoration-none">Việc làm</a>
+                                    </li>
+                                    <li class="breadcrumb-item text-white active">
+                                        <t t-esc="job.name"/>
+                                    </li>
+                                </ol>
+                            </nav>
+
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="badge bg-light text-primary me-2 px-3 py-2">
+                                            <t t-esc="job.department_id.name or 'Phòng ban'"/>
+                                        </span>
+                                        <t t-if="job.remote_policy == 'remote'">
+                                            <span class="badge bg-info px-3 py-2">Remote</span>
+                                        </t>
+                                        <t t-elif="job.remote_policy == 'hybrid'">
+                                            <span class="badge bg-warning text-dark px-3 py-2">Hybrid</span>
+                                        </t>
+                                    </div>
+                                    <h1 class="display-6 fw-bold mb-3">
+                                        <t t-esc="job.name"/>
+                                    </h1>
+                                    <div class="d-flex flex-wrap gap-4 align-items-center">
+                                        <span class="opacity-75">
+                                            <i class="fa fa-building me-2"></i>
+                                            <t t-esc="company.name"/>
+                                        </span>
+                                        <span class="opacity-75">
+                                            <i class="fa fa-map-marker-alt me-2"></i>
+                                            <t t-esc="job.location_id.city or 'Không xác định'"/>
+                                        </span>
+                                        <span class="opacity-75">
+                                            <i class="fa fa-clock me-2"></i>
+                                            <t t-esc="experience_label"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 mt-4 mt-lg-0">
+                                    <div class="card border-0 shadow">
+                                        <div class="card-body text-center">
+                                            <h4 class="text-success mb-1">
+                                                <t t-esc="salary_display or 'Thỏa thuận'"/>
+                                            </h4>
+                                            <p class="text-muted small mb-3">
+                                                <t t-if="job.salary_level_id">Mức lương</t>
+                                            </p>
+                                            <a href="#apply-section" class="btn btn-success w-100 py-2 mb-2">
+                                                <i class="fa fa-paper-plane me-2"></i>Ứng tuyển ngay
+                                            </a>
+                                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                                <i class="fa fa-bookmark me-2"></i>Lưu tin tuyển dụng
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Content -->
+                    <div class="container py-5">
+                        <div class="row">
+                            <!-- Main Content -->
+                            <div class="col-lg-8">
+
+                                <!-- Quick Info Cards -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6 col-md-4">
+                                        <div class="card border-0 bg-light h-100">
+                                            <div class="card-body text-center">
+                                                <i class="fa fa-money-bill text-success fa-2x mb-2"></i>
+                                                <h6 class="mb-1">Mức lương</h6>
+                                                <p class="small text-muted mb-0">
+                                                    <t t-esc="salary_display or 'Thỏa thuận'"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="card border-0 bg-light h-100">
+                                            <div class="card-body text-center">
+                                                <i class="fa fa-users text-primary fa-2x mb-2"></i>
+                                                <h6 class="mb-1">Số lượng</h6>
+                                                <p class="small text-muted mb-0">
+                                                    <t t-esc="job.no_of_recruitment"/> người
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="card border-0 bg-light h-100">
+                                            <div class="card-body text-center">
+                                                <i class="fa fa-calendar text-warning fa-2x mb-2"></i>
+                                                <h6 class="mb-1">Hạn nộp</h6>
+                                            <p class="small text-muted mb-0">
+                                                <t t-if="job.application_deadline">
+                                                    <t t-esc="job.application_deadline.strftime('%d/%m/%Y')"/>
+                                                </t>
+                                                <t t-else="">Liên tục</t>
+                                            </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Job Description Section -->
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-white py-3">
+                                        <h4 class="mb-0">
+                                            <i class="fa fa-file-alt text-primary me-2"></i>
+                                            Mô tả công việc
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="job-description-content">
+                                            <t t-if="job.description">
+                                                <t t-raw="job.description"/>
+                                            </t>
+                                            <t t-else="">
+                                                <p class="text-muted fst-italic">Chưa có mô tả công việc.</p>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Requirements Section -->
+                                <t t-if="job.requirements">
+                                    <div class="card border-0 shadow-sm mb-4">
+                                        <div class="card-header bg-white py-3">
+                                            <h4 class="mb-0">
+                                                <i class="fa fa-clipboard-check text-primary me-2"></i>
+                                                Yêu cầu ứng viên
+                                            </h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="job-requirements-content">
+                                                <t t-raw="job.requirements"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- Benefits Section -->
+                                <t t-if="job.benefits">
+                                    <div class="card border-0 shadow-sm mb-4">
+                                        <div class="card-header bg-white py-3">
+                                            <h4 class="mb-0">
+                                                <i class="fa fa-gift text-primary me-2"></i>
+                                                Quyền lợi
+                                            </h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="job-benefits-content">
+                                                <t t-raw="job.benefits"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- Working Info -->
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-white py-3">
+                                        <h4 class="mb-0">
+                                            <i class="fa fa-info-circle text-primary me-2"></i>
+                                            Thông tin tuyển dụng
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless mb-0">
+                                                    <tr>
+                                                        <td class="text-muted ps-0" style="width: 140px;">
+                                                            <i class="fa fa-briefcase me-2 text-primary"></i>Cấp bậc
+                                                        </td>
+                                                        <td><t t-esc="experience_label"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted ps-0">
+                                                            <i class="fa fa-clock me-2 text-primary"></i>Hình thức
+                                                        </td>
+                                                        <td>
+                                                            <t t-esc="job.contract_type_id.name or 'Toàn thời gian'"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted ps-0">
+                                                            <i class="fa fa-laptop-house me-2 text-primary"></i>Chế độ
+                                                        </td>
+                                                        <td><t t-esc="remote_label"/></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless mb-0">
+                                                    <t t-if="job.working_hours">
+                                                        <tr>
+                                                            <td class="text-muted ps-0" style="width: 140px;">
+                                                                <i class="fa fa-hourglass me-2 text-primary"></i>Giờ làm việc
+                                                            </td>
+                                                            <td><t t-esc="job.working_hours"/></td>
+                                                        </tr>
+                                                    </t>
+                                                    <tr>
+                                                        <td class="text-muted ps-0">
+                                                            <i class="fa fa-graduation-cap me-2 text-primary"></i>Trình độ
+                                                        </td>
+                                                        <td>
+                                                            <t t-esc="job.degree_id.name or 'Không yêu cầu'"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted ps-0">
+                                                            <i class="fa fa-user me-2 text-primary"></i>Giới tính
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="job.gender_require == 'both'">Không giới hạn</t>
+                                                            <t t-elif="job.gender_require == 'male'">Nam</t>
+                                                            <t t-elif="job.gender_require == 'female'">Nữ</t>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Skills -->
+                                <t t-if="job.skill_ids">
+                                    <div class="card border-0 shadow-sm mb-4">
+                                        <div class="card-header bg-white py-3">
+                                            <h4 class="mb-0">
+                                                <i class="fa fa-star text-primary me-2"></i>
+                                                Kỹ năng yêu cầu
+                                            </h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <t t-foreach="job.skill_ids" t-as="skill">
+                                                    <span class="badge bg-light text-dark border px-3 py-2">
+                                                        <t t-esc="skill.name"/>
+                                                    </span>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- Apply Section -->
+                                <div class="card border-0 shadow-sm bg-primary text-white" id="apply-section">
+                                    <div class="card-body py-4">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-8">
+                                                <h4 class="mb-1">Ứng tuyển ngay</h4>
+                                                <p class="mb-0 opacity-75">
+                                                    Gửi hồ sơ ứng tuyển cho vị trí <strong><t t-esc="job.name"/></strong>
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                <a href="#" class="btn btn-light btn-lg">
+                                                    <i class="fa fa-paper-plane me-2"></i>Nộp hồ sơ
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Sidebar -->
+                            <div class="col-lg-4 mt-4 mt-lg-0">
+
+                                <!-- Company Info Card -->
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-white py-3">
+                                        <h5 class="mb-0">
+                                            <i class="fa fa-building text-primary me-2"></i>
+                                            Thông tin công ty
+                                        </h5>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <div class="company-logo mb-3">
+                                            <t t-if="company.logo">
+                                                <img t-att-src="'/web/image/res.company/%s/logo' % company.id"
+                                                     class="rounded" style="max-height: 80px;"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                     style="width: 80px; height: 80px;">
+                                                    <i class="fa fa-building fa-2x text-muted"></i>
+                                                </div>
+                                            </t>
+                                        </div>
+                                        <h5><t t-esc="company.name"/></h5>
+                                        <p class="text-muted small mb-0">
+                                            <t t-esc="company.street"/>
+                                            <t t-if="company.city">, <t t-esc="company.city"/></t>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Related Jobs -->
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-white py-3">
+                                        <h5 class="mb-0">
+                                            <i class="fa fa-list text-primary me-2"></i>
+                                            Việc làm liên quan
+                                        </h5>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            <a href="/jobs" class="list-group-item list-group-item-action">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Xem tất cả việc làm</span>
+                                                    <i class="fa fa-arrow-right"></i>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Additional CSS -->
+                <style>
+                    .job-detail-header {
+                        background: linear-gradient(135deg, #1E3769 0%, #2d5a9e 100%);
+                    }
+                    .job-detail-header .breadcrumb-item a:hover {
+                        color: #fff !important;
+                    }
+                    .job-card {
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }
+                    .job-card:hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+                    }
+                    .job-card .stretched-link-x::after {
+                        bottom: 0;
+                        content: "";
+                        left: 0;
+                        outline: none;
+                        position: absolute;
+                        right: 0;
+                        top: 0;
+                        z-index: 1;
+                    }
+                    .job-description-content,
+                    .job-requirements-content,
+                    .job-benefits-content {
+                        line-height: 1.8;
+                    }
+                    .job-description-content ul,
+                    .job-requirements-content ul,
+                    .job-benefits-content ul {
+                        padding-left: 20px;
+                    }
+                </style>
+
+            </t>
+        </template>
+
+    </data>
+</odoo>

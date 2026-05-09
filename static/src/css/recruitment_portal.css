@@ -1,0 +1,58 @@
+
+/* File: static/src/css/recruitment_portal.css */
+.o_portal_docs_entry:hover {
+    background-color: #e2e6ea !important;
+    transition: background-color 0.2s ease;
+}
+.portal_doc_entry:hover {
+    background-color: #f8f9fa;
+    border-color: #1E3769 !important;
+}
+
+/* Tabs */
+.portal-recruitment-tabs.nav-tabs .nav-link.active {
+    background-color: #1E3769 !important;
+    color: #fff !important;
+    border-color: #1E3769 #1E3769 #fff !important;
+}
+
+.portal-recruitment-tabs.nav-tabs .nav-link:hover {
+    background-color: #2a4a8a;
+    color: #fff;
+}
+
+.portal-recruitment-tabs {
+    border-bottom: 1px solid #a5b8cc;
+}
+
+.eaut_recruitment-container {
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    border-radius: 8px;
+    border: 1px solid rgba(30, 55, 105, 0.1);
+}
+
+.eaut_recruitment-table .text-small {
+    font-size: 0.675em;
+    background-color: rgba(100, 100, 111, 0.1);
+    border-radius: 2px;
+    border: 1px solid rgba(30, 55, 105, 0.2);
+    padding: 2px 6px;
+    font-weight: 500;
+}
+
+/* Multi-select skills */
+select[multiple] {
+    min-height: 100px;
+    padding: 8px;
+}
+
+select[multiple] option {
+    padding: 4px 8px;
+    margin: 2px 0;
+    border-radius: 4px;
+}
+
+select[multiple] option:checked {
+    background-color: #1E3769;
+    color: #fff;
+}

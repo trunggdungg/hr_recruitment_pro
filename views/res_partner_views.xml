@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View cho Partner - Thêm trường is_recruiter vào form chính -->
+    <record id="view_partner_form_recruiter" model="ir.ui.view">
+        <field name="name">res.partner.form.recruiter</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Thêm trường is_recruiter vào sheet, sau website -->
+            <xpath expr="//field[@name='website']" position="after">
+                <field name="is_recruiter"/>
+            </xpath>
+            
+            <!-- Thêm tab Tuyển dụng vào notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Tuyển dụng" name="recruitment" 
+                      invisible="not is_recruiter">
+<!--                    <group>-->
+<!--                        <group string="Trạng thái">-->
+<!--                            <field name="recruiter_verified" readonly="1"/>-->
+<!--                        </group>-->
+<!--                        <group string="Thông tin công ty">-->
+<!--                            <field name="recruiter_company_name"/>-->
+<!--                            <field name="recruiter_company_logo" -->
+<!--                                   widget="image" -->
+<!--                                   class="oe_avatar"/>-->
+<!--                            <field name="recruiter_tax_id"/>-->
+<!--                            <field name="recruiter_company_size"/>-->
+<!--                            <field name="recruiter_industry"/>-->
+<!--                        </group>-->
+<!--                    </group>-->
+<!--                    <group>-->
+<!--                        <field name="recruiter_description" -->
+<!--                               placeholder="Giới thiệu về công ty..."/>-->
+<!--                    </group>-->
+                    <group>
+                        <field name="recruiter_job_ids" readonly="1"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search view để lọc recruiters -->
+    <record id="view_partner_search_recruiter" model="ir.ui.view">
+        <field name="name">res.partner.search.recruiter</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='type_company']" position="after">
+                <filter string="Nhà tuyển dụng" name="recruiter" 
+                        domain="[('is_recruiter', '=', True)]"/>
+                <filter string="Đã xác minh" name="verified" 
+                        domain="[('recruiter_verified', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
