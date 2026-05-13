@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Trang chi tiết ứng viên -->
         <template id="portal_applicant_detail" name="Chi tiết ứng viên">
             <t t-call="portal.portal_layout">
                 <t t-set="breadcrumbs_searchbar" t-value="True"/>
@@ -53,29 +52,69 @@
                                         </span>
                                     </p>
                                     <p class="mb-2">
-                                        <strong>Trạng thái hiện tại:</strong>
-                                        <span class="badge ms-2" t-attf-style="background-color: #1E3769; color: #fff;">
+                                        <strong>Trạng thái Odoo:</strong>
+                                        <span class="badge ms-2" style="background-color: #1E3769; color: #fff;">
                                             <t t-esc="applicant.stage_id.name if applicant.stage_id else 'Mới'"/>
-                                        </span>
-                                    </p>
-                                    <p class="mb-2">
-                                        <strong>Kết quả xét duyệt:</strong>
-                                        <span class="badge ms-2" t-attf-class="
-                                            #{'bg-warning' if applicant.recruiter_feedback == 'pending' else ''}
-                                            #{'bg-success' if applicant.recruiter_feedback == 'approved' else ''}
-                                            #{'bg-success' if applicant.recruiter_feedback == 'interview' else ''}
-                                            #{'bg-danger' if applicant.recruiter_feedback == 'rejected' else ''}
-                                        ">
-                                            <t t-if="applicant.recruiter_feedback == 'pending'">Chờ xét duyệt</t>
-                                            <t t-if="applicant.recruiter_feedback == 'approved'">Đạt</t>
-                                            <t t-if="applicant.recruiter_feedback == 'interview'">Phỏng vấn</t>
-                                            <t t-if="applicant.recruiter_feedback == 'rejected'">Không đạt</t>
                                         </span>
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                  <!-- ===== PIPELINE STAGE BAR ===== -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex align-items-center gap-2">
+
+            <div class="pipeline-bar-wrapper flex-grow-1">
+
+                <a href="#"
+                   t-att-data-action="'pending'"
+                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'pending' else ('s-done' if applicant.recruiter_feedback in ['interview','approved','contracted'] else '')}">
+                    <i class="fa fa-hourglass-half me-1"></i>
+                    Chờ xét duyệt
+                </a>
+
+                <a href="#"
+                   t-att-data-action="'interview'"
+                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'interview' else ('s-done' if applicant.recruiter_feedback in ['approved','contracted'] else '')}">
+                    <i class="fa fa-calendar me-1"></i>
+                    Mời phỏng vấn
+
+                    <t t-if="applicant.recruiter_feedback == 'interview' and applicant.interview_date">
+                        <span class="badge ms-1" style="background:rgba(255,255,255,0.25);font-size:0.7rem;">
+                            <t t-esc="applicant.interview_date.strftime('%d/%m')"/>
+                        </span>
+                    </t>
+                </a>
+
+                <a href="#"
+                   t-att-data-action="'approved'"
+                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'approved' else ('s-done' if applicant.recruiter_feedback == 'contracted' else '')}">
+                    <i class="fa fa-thumbs-up me-1"></i>
+                    Đạt yêu cầu
+                </a>
+
+                <a href="#"
+                   t-att-data-action="'contracted'"
+                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'contracted' else ''}">
+                    <i class="fa fa-file-text me-1"></i>
+                    Hợp đồng ký 12
+                </a>
+
+            </div>
+
+            <a href="#"
+               t-att-data-action="'rejected'"
+               t-attf-class="pipeline-fail-btn #{'s-active' if applicant.recruiter_feedback == 'rejected' else ''}">
+                <i class="fa fa-times-circle me-1"></i>
+                Fail
+            </a>
+
+        </div>
+    </div>
+</div>
 
                     <!-- Các tab thông tin -->
                     <ul class="nav nav-tabs mb-4" role="tablist">
@@ -85,18 +124,25 @@
                                 <i class="fa fa-info-circle me-1"></i>Thông tin ứng viên
                             </button>
                         </li>
-
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab"
-                                    data-bs-target="#notes-tab" type="button">
-                                <i class="fa fa-sticky-note me-1"></i>Ghi chú
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab"
-                                    data-bs-target="#interview-tab" type="button">
-                                <i class="fa fa-calendar me-1"></i>Lịch phỏng vấn
-                            </button>
+                            <t t-if="applicant.recruiter_feedback == 'interview'">
+                                <button class="nav-link" data-bs-toggle="tab"
+                                        data-bs-target="#interview-tab" type="button">
+                                    <i class="fa fa-calendar me-1"></i>Lịch phỏng vấn
+                                    <t t-if="applicant.interview_date">
+                                        <span class="badge bg-success ms-1">
+                                            <t t-esc="applicant.interview_date.strftime('%d/%m')"/>
+                                        </span>
+                                    </t>
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <button class="nav-link disabled" type="button"
+                                        title="Cần chuyển sang 'Mời phỏng vấn' trước">
+                                    <i class="fa fa-calendar me-1"></i>Lịch phỏng vấn
+                                    <i class="fa fa-lock ms-1"/>
+                                </button>
+                            </t>
                         </li>
                     </ul>
 
@@ -136,6 +182,7 @@
                                             </p>
                                         </div>
                                     </div>
+
                                     <div class="row mb-3">
                                         <div class="col-md-12">
                                             <label class="text-muted small">Giới thiệu ngắn</label>
@@ -148,7 +195,6 @@
                                         </div>
                                     </div>
 
-                                    <!--                                    -->
                                     <div class="row mb-3">
                                         <div class="col-12">
                                             <label class="text-muted small">CV đính kèm</label>
@@ -163,9 +209,7 @@
                                                                 <t t-esc="attachment.name"/>
                                                             </a>
                                                             <span class="text-muted ms-2">
-                                                                (
-                                                                <t t-esc="attachment.file_size // 1024"/>
-                                                                KB)
+                                                                (<t t-esc="attachment.file_size // 1024"/> KB)
                                                             </span>
                                                         </div>
                                                     </t>
@@ -176,45 +220,26 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <!--                                    -->
 
+                                    <!-- Ghi chú nhà tuyển dụng -->
                                     <div class="row mb-3">
                                         <div class="col-12">
-                                            <label class="text-muted small">Ghi chú</label>
-                                            <div class="p-3 bg-light rounded">
-                                                <t t-if="applicant.partner_id.comment">
-                                                    <t t-esc="applicant.partner_id.comment"/>
-                                                </t>
-                                                <p class="text-muted mb-0">Không có</p>
-                                            </div>
+                                            <form t-attf-action="/my/recruitment/applicant/#{applicant.id}/update_note"
+                                                  method="post">
+                                                <input type="hidden" name="csrf_token"
+                                                       t-att-value="request.csrf_token()"/>
+                                                <label class="text-muted small">Ghi chú nhà tuyển dụng</label>
+                                                <textarea class="form-control" name="note" rows="3"
+                                                          placeholder="Nhập ghi chú về ứng viên này..."><t t-esc="applicant.recruiter_note or ''"/></textarea>
+                                                <div class="mt-2">
+                                                    <button type="submit" class="btn btn-sm"
+                                                            style="background-color: #1E3769; color: #fff;">
+                                                        <i class="fa fa-save me-1"></i>Lưu ghi chú
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- Tab: Ghi chú -->
-                        <div class="tab-pane fade" id="notes-tab">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title mb-3">Ghi chú của nhà tuyển dụng</h5>
-
-                                    <!-- Form cập nhật ghi chú -->
-                                    <form t-attf-action="/my/recruitment/applicant/#{applicant.id}/action"
-                                          method="post" class="mb-4">
-                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                        <div class="mb-3">
-                                            <textarea class="form-control" name="note" rows="4"
-                                                      placeholder="Nhập ghi chú về ứng viên này...">
-                                                <t t-esc="applicant.recruiter_note or ''"/>
-                                            </textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-outline-primary" name="action"
-                                                value="update_note">
-                                            <i class="fa fa-save me-1"></i>Lưu ghi chú
-                                        </button>
-                                    </form>
 
                                 </div>
                             </div>
@@ -224,204 +249,129 @@
                         <div class="tab-pane fade" id="interview-tab">
                             <div class="card shadow-sm">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-3">Hẹn lịch phỏng vấn</h5>
+                                    <t t-if="applicant.recruiter_feedback != 'interview'">
+                                        <div class="text-center py-5 text-muted">
+                                            <i class="fa fa-lock fa-3x mb-3"></i>
+                                            <p class="mb-0">Cần chuyển sang <strong>"Mời phỏng vấn"</strong> trước khi đặt lịch.</p>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <h5 class="card-title mb-3">
+                                            <i class="fa fa-calendar me-2"></i>Hẹn lịch phỏng vấn
+                                        </h5>
 
-                                    <form t-attf-action="/my/recruitment/applicant/#{applicant.id}/schedule_interview"
-                                          method="post">
-                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">Ngày giờ phỏng vấn</label>
-                                                <input type="datetime-local" class="form-control" name="interview_date"
-                                                       t-att-value="applicant.interview_date.strftime('%Y-%m-%dT%H:%M') if applicant.interview_date else ''"/>
+                                        <t t-if="applicant.interview_date">
+                                            <div class="alert alert-success mb-3">
+                                                <i class="fa fa-check-circle me-2"></i>
+                                                <strong>Đã hẹn lịch:</strong>
+                                                <t t-esc="applicant.interview_date.strftime('%H:%M - %d/%m/%Y')"/>
                                             </div>
-                                        </div>
+                                        </t>
 
-                                        <div class="mb-3">
-                                            <label class="form-label">Ghi chú phỏng vấn</label>
-                                            <textarea class="form-control" name="interview_note" rows="3"
-                                                      placeholder="Ghi chú về lịch phỏng vấn...">
-                                                <t t-esc="applicant.interview_note or ''"/>
-                                            </textarea>
-                                        </div>
-
-                                        <button type="submit" class="btn"
-                                                style="background-color: #1E3769; color: #fff;">
-                                            <i class="fa fa-calendar-check-o me-1"></i>Xác nhận lịch phỏng vấn
-                                        </button>
-                                    </form>
+                                        <form t-attf-action="/my/recruitment/applicant/#{applicant.id}/schedule_interview"
+                                              method="post">
+                                            <input type="hidden" name="csrf_token"
+                                                   t-att-value="request.csrf_token()"/>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">
+                                                        Ngày giờ phỏng vấn <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="datetime-local" class="form-control"
+                                                           name="interview_date"
+                                                           t-att-value="applicant.interview_date.strftime('%Y-%m-%dT%H:%M') if applicant.interview_date else ''"/>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Ghi chú phỏng vấn</label>
+                                                <textarea class="form-control" name="interview_note" rows="3"
+                                                          placeholder="Địa điểm, hình thức, yêu cầu chuẩn bị..."><t t-esc="applicant.interview_note or ''"/></textarea>
+                                            </div>
+                                            <button type="submit" class="btn"
+                                                    style="background-color: #1E3769; color: #fff;">
+                                                <i class="fa fa-calendar-check-o me-1"></i>
+                                                <t t-if="applicant.interview_date">Cập nhật lịch</t>
+                                                <t t-else="">Xác nhận lịch phỏng vấn</t>
+                                            </button>
+                                        </form>
+                                    </t>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Panel hành động xét duyệt -->
-                    <div class="card shadow-sm mt-4 border-success">
-                        <div class="card-header" style="background-color: #198754; color: #fff;">
-                            <h5 class="mb-0"><i class="fa fa-check-circle me-2"></i>Hành động xét duyệt
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted mb-3">Chọn hành động để xét duyệt ứng viên này:</p>
-
-                            <div class="row g-3">
-                                <!-- Duyệt - Hẹn phỏng vấn -->
-                                <div class="col-md-3">
-                                    <div class="d-grid">
-                                        <button class="btn btn-success" onclick="doApplicantAction('approve', this)">
-                                            <i class="fa fa-check me-1"></i>Duyệt &amp; Phỏng vấn
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Đánh dấu đạt -->
-                                <div class="col-md-3">
-                                    <div class="d-grid">
-                                        <button class="btn btn-primary"
-                                                onclick="doApplicantAction('mark_approved', this)">
-                                            <i class="fa fa-thumbs-up me-1"></i>Đạt yêu cầu
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Chờ xét duyệt -->
-                                <div class="col-md-3">
-                                    <div class="d-grid">
-                                        <button class="btn btn-warning text-white"
-                                                onclick="doApplicantAction('mark_pending', this)">
-                                            <i class="fa fa-clock-o me-1"></i>Chờ xét duyệt
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Từ chối -->
-                                <div class="col-md-3">
-                                    <div class="d-grid">
-                                        <button class="btn btn-danger" onclick="doApplicantAction('reject', this)">
-                                            <i class="fa fa-times me-1"></i>Từ chối
-                                        </button>
-                                    </div>
-                                </div>
+                    <!-- Toast thông báo -->
+                    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+                        <div id="action-toast" class="toast" role="alert"
+                             aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                <strong class="me-auto" id="toast-title">Thông báo</strong>
+                                <button type="button" class="btn-close"
+                                        onclick="document.getElementById('action-toast').classList.remove('show'); document.getElementById('action-toast').style.display='none';"
+                                        aria-label="Close"/>
                             </div>
-
-                            <!-- Ghi chú khi thực hiện action -->
-                            <div class="mt-3" id="action-note-section" style="display: none;">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <label class="form-label">Ghi chú (tùy chọn):</label>
-                                        <textarea class="form-control" id="action-note" rows="2"
-                                                  placeholder="Nhập ghi chú cho hành động này..."></textarea>
-                                        <input type="hidden" id="current-action"/>
-                                        <div class="mt-2 text-end">
-                                            <button type="button" class="btn btn-secondary btn-sm"
-                                                    onclick="cancelAction()">
-                                                Hủy
-                                            </button>
-                                            <button type="button" class="btn btn-primary btn-sm"
-                                                    onclick="submitAction()">
-                                                Xác nhận
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Toast thông báo -->
-                            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-                                <div id="action-toast" class="toast" role="alert" aria-live="assertive"
-                                     aria-atomic="true">
-                                    <div class="toast-header">
-                                        <strong class="me-auto" id="toast-title">Thông báo</strong>
-                                        <button type="button" class="btn-close" data-bs-dismiss="toast"
-                                                aria-label="Close"></button>
-                                    </div>
-                                    <div class="toast-body" id="toast-message">
-                                        Thành công!
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="toast-body" id="toast-message"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- JavaScript cho các action -->
+                <!-- JavaScript -->
                 <script>
-                    var pendingButton = null;
-
-                    function doApplicantAction(action, btnElement) {
-                    // Highlight button
-                    if (pendingButton) {
-                    pendingButton.style.opacity = '1';
-                    }
-                    pendingButton = btnElement;
-                    btnElement.style.opacity = '0.7';
-
-                    // Show note section
-                    document.getElementById('action-note-section').style.display = 'block';
-                    document.getElementById('current-action').value = action;
-
-                    // Scroll to action section
-                    document.getElementById('action-note-section').scrollIntoView({ behavior: 'smooth' });
-                    }
-
-                    function cancelAction() {
-                    document.getElementById('action-note-section').style.display = 'none';
-                    document.getElementById('current-action').value = '';
-                    document.getElementById('action-note').value = '';
-                    if (pendingButton) {
-                    pendingButton.style.opacity = '1';
-                    pendingButton = null;
-                    }
-                    }
-
-                    function submitAction() {
-                    var action = document.getElementById('current-action').value;
-                    var note = document.getElementById('action-note').value;
-
-                    if (!action) return;
-
-                    // Call via AJAX
-                    fetch('/my/recruitment/applicant/<t t-esc="applicant.id"/>/action', {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': document.querySelector('meta[name="csrf_token"]')?.content || ''
-                    },
-                    body: JSON.stringify({
-                    action: action,
-                    note: note
-                    })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                    if (data.success) {
-                    showToast('Thành công', data.message);
-                    // Reload page after 1.5s
-                    setTimeout(function() {
-                    location.reload();
-                    }, 1500);
-                    } else {
-                    showToast('Lỗi', data.error || 'Đã xảy ra lỗi');
-                    }
-                    })
-                    .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Lỗi', 'Không thể thực hiện hành động');
+                    // Gắn sự kiện click cho tất cả stage trong pipeline
+                    document.addEventListener('DOMContentLoaded', function () {
+                        document.querySelectorAll('[data-action]').forEach(function (el) {
+                            el.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                var action = this.getAttribute('data-action');
+                                switchStage(action);
+                            });
+                        });
                     });
 
-                    cancelAction();
+                    function switchStage(action) {
+                        var payload = {
+                            jsonrpc: '2.0',
+                            method: 'call',
+                            id: Math.floor(Math.random() * 1000000),
+                            params: { action: action }
+                        };
+
+                        fetch('/my/recruitment/applicant/<t t-out="applicant.id"/>/action', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            var result = data.result || data;
+                            if (result.success) {
+                                showToast('Thành công', result.message, 'success');
+                                setTimeout(function () { location.reload(); }, 1200);
+                            } else {
+                                showToast('Lỗi', result.error || 'Đã xảy ra lỗi', 'danger');
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                            showToast('Lỗi', 'Không thể thực hiện hành động', 'danger');
+                        });
                     }
 
-                    function showToast(title, message) {
-                    document.getElementById('toast-title').textContent = title;
-                    document.getElementById('toast-message').textContent = message;
-                    var toast = new bootstrap.Toast(document.getElementById('action-toast'));
-                    toast.show();
+                    function showToast(title, message, type) {
+                        var toastEl = document.getElementById('action-toast');
+                        var toastHeader = toastEl.querySelector('.toast-header');
+                        document.getElementById('toast-title').textContent = title;
+                        document.getElementById('toast-message').textContent = message;
+                        toastHeader.className = 'toast-header text-white bg-' + (type || 'primary');
+                        toastEl.classList.add('show');
+                        toastEl.style.display = 'block';
+                        setTimeout(function () {
+                            toastEl.classList.remove('show');
+                            toastEl.style.display = 'none';
+                        }, 3000);
                     }
                 </script>
             </t>
         </template>
-
     </data>
 </odoo>

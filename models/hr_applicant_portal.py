@@ -12,9 +12,10 @@ class HrApplicantPortal(models.Model):
     )
     recruiter_feedback = fields.Selection([
         ('pending', 'Chờ xét duyệt'),
-        ('approved', 'Đạt'),
-        ('rejected', 'Không đạt'),
-        ('interview', 'Hẹn phỏng vấn'),
+        ('interview', 'Mời phỏng vấn'),
+        ('approved', 'Đạt yêu cầu'),
+        ('contracted', 'Hợp đồng ký'),
+        ('rejected', 'Fail'),
     ],
         string='Kết quả xét duyệt',
         default='pending',
@@ -28,6 +29,7 @@ class HrApplicantPortal(models.Model):
         string='Ghi chú phỏng vấn',
         help='Ghi chú về buổi phỏng vấn'
     )
+
 
     def portal_approve(self):
         """Duyệt ứng viên - chuyển sang phỏng vấn"""

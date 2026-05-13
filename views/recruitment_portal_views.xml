@@ -46,7 +46,6 @@
         <t t-set="total_jobs" t-value="total_jobs if total_jobs is not None else 0"/>
         <t t-set="search_query" t-value="search_query if search_query is not None else ''"/>
 
-        <div class="eaut_recruitment-container container py-4 px-2">
                 <div class="eaut_recruitment-container container py-4 px-2">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="mb-0" style="color: #1E3769;">Quản lý tuyển dụng</h3>
@@ -229,47 +228,47 @@
 
         <!-- Phân trang -->
         <t t-if="total_pages > 1">
-    <t t-set="prev_page" t-value="page - 1"/>
-    <t t-set="next_page" t-value="page + 1"/>
-    <t t-set="is_first" t-value="page == 1"/>
-    <t t-set="is_last" t-value="page == total_pages"/>
+            <t t-set="prev_page" t-value="page - 1"/>
+            <t t-set="next_page" t-value="page + 1"/>
+            <t t-set="is_first" t-value="page == 1"/>
+            <t t-set="is_last" t-value="page == total_pages"/>
 
-    <nav class="mt-4">
-        <ul class="pagination pagination-sm justify-content-center mb-0">
+            <nav class="mt-4">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
 
-            <!-- Prev -->
-            <li t-att-class="'page-item disabled' if is_first else 'page-item'">
-                <a class="page-link"
-                   t-attf-href="/my/recruitment?tab=jobs&amp;page=#{prev_page}&amp;search=#{search_query}">
-                    <i class="fa fa-chevron-left"></i>
-                </a>
-            </li>
+                    <!-- Prev -->
+                    <li t-att-class="'page-item disabled' if is_first else 'page-item'">
+                        <a class="page-link"
+                           t-attf-href="/my/recruitment?tab=jobs&amp;page=#{prev_page}&amp;search=#{search_query}">
+                            <i class="fa fa-chevron-left"></i>
+                        </a>
+                    </li>
 
-            <!-- Số trang -->
-            <t t-foreach="range(1, total_pages + 1)" t-as="p">
-                <li t-att-class="'page-item active' if p == page else 'page-item'">
-                    <a class="page-link"
-                       t-attf-href="/my/recruitment?tab=jobs&amp;page=#{p}&amp;search=#{search_query}">
-                        <t t-esc="p"/>
-                    </a>
-                </li>
-            </t>
+                    <!-- Số trang -->
+                    <t t-foreach="range(1, total_pages + 1)" t-as="p">
+                        <li t-att-class="'page-item active' if p == page else 'page-item'">
+                            <a class="page-link"
+                               t-attf-href="/my/recruitment?tab=jobs&amp;page=#{p}&amp;search=#{search_query}">
+                                <t t-esc="p"/>
+                            </a>
+                        </li>
+                    </t>
 
-            <!-- Next -->
-            <li t-att-class="'page-item disabled' if is_last else 'page-item'">
-                <a class="page-link"
-                   t-attf-href="/my/recruitment?tab=jobs&amp;page=#{next_page}&amp;search=#{search_query}">
-                    <i class="fa fa-chevron-right"></i>
-                </a>
-            </li>
+                    <!-- Next -->
+                    <li t-att-class="'page-item disabled' if is_last else 'page-item'">
+                        <a class="page-link"
+                           t-attf-href="/my/recruitment?tab=jobs&amp;page=#{next_page}&amp;search=#{search_query}">
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </li>
 
-        </ul>
-        <p class="text-center mt-2 mb-0" style="font-size:12px; color:#6c757d;">
-            Trang <t t-esc="page"/>/<t t-esc="total_pages"/> —
-            <t t-esc="total_jobs"/> tin tuyển dụng
-        </p>
-    </nav>
-</t>
+                </ul>
+                <p class="text-center mt-2 mb-0" style="font-size:12px; color:#6c757d;">
+                    Trang <t t-esc="page"/>/<t t-esc="total_pages"/> —
+                    <t t-esc="total_jobs"/> tin tuyển dụng
+                </p>
+            </nav>
+        </t>
 
     </t>
     <t t-else="">
@@ -809,6 +808,7 @@
 
                 <!-- CSS -->
                 <style>
+                     .o_portal_submenu { display: none !important; }
                     /* Skill tag field */
                     .skill-field-wrap {
                         background: #fff; cursor: text; min-height: 44px;

@@ -1,0 +1,142 @@
+
+            /* ===== PIPELINE STAGE BAR ===== */
+.pipeline-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 36px;
+}
+
+.pipeline-stage-arrow {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 20px 0 28px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none !important;
+    cursor: pointer;
+    flex: 1;
+    background: #f0f2f5;
+    color: #6c757d !important;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    border-left: 1px solid #dee2e6;
+    border-right: none;
+    transition: background 0.15s;
+    z-index: 1;
+}
+
+.pipeline-stage-arrow:first-child {
+    padding-left: 16px;
+    border-radius: 4px 0 0 4px;
+}
+
+.pipeline-stage-arrow:last-of-type {
+    border-right: 1px solid #dee2e6;
+    border-radius: 0 4px 4px 0;
+    padding-right: 16px;
+}
+
+/* Mũi tên fill */
+.pipeline-stage-arrow::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: -1px;
+    width: 20px;
+    height: 36px;
+    background: #f0f2f5;
+    border-top: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    transform: skewX(20deg);
+    z-index: 2;
+}
+.pipeline-stage-arrow:last-of-type::after { display: none; }
+
+/* Che góc trái */
+.pipeline-stage-arrow::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: -1px;
+    width: 20px;
+    height: 36px;
+    background: #f0f2f5;
+    transform: skewX(20deg);
+    z-index: 2;
+    border-top: 1px solid #dee2e6;
+}
+.pipeline-stage-arrow:first-child::before { display: none; }
+
+/* Active */
+.pipeline-stage-arrow.s-active {
+    background: #1E3769 !important;
+    color: #fff !important;
+    border-color: #1E3769 !important;
+    z-index: 3;
+}
+.pipeline-stage-arrow.s-active::after {
+    background: #1E3769 !important;
+    border-color: #1E3769 !important;
+}
+.pipeline-stage-arrow.s-active::before {
+    background: #1E3769 !important;
+    border-color: #1E3769 !important;
+}
+
+/* Done */
+.pipeline-stage-arrow.s-done {
+    background: #d4edda !important;
+    color: #155724 !important;
+    border-color: #b8ddc8 !important;
+}
+.pipeline-stage-arrow.s-done::after {
+    background: #d4edda !important;
+    border-color: #b8ddc8 !important;
+}
+.pipeline-stage-arrow.s-done::before {
+    background: #d4edda !important;
+    border-color: #b8ddc8 !important;
+}
+
+/* Hover */
+.pipeline-stage-arrow:not(.s-active):not(.s-done):hover {
+    background: #e2e6ea !important;
+    color: #343a40 !important;
+}
+.pipeline-stage-arrow:not(.s-active):not(.s-done):hover::after,
+.pipeline-stage-arrow:not(.s-active):not(.s-done):hover::before {
+    background: #e2e6ea !important;
+}
+
+/* Fail button */
+.pipeline-fail-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    height: 36px;
+    border-radius: 4px;
+    border: 1px dashed #dc3545;
+    background: #fff5f5;
+    color: #dc3545 !important;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none !important;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.pipeline-fail-btn.s-active {
+    background: #dc3545 !important;
+    color: #fff !important;
+    border-style: solid;
+}
+.pipeline-fail-btn:not(.s-active):hover {
+    background: #ffe0e0 !important;
+}

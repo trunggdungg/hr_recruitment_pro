@@ -36,6 +36,7 @@
             'hr_recruitment_pro/static/src/css/job_web_view.css',
             'hr_recruitment_pro/static/src/css/recruitment_portal.css',
             'hr_recruitment_pro/static/src/js/portal_create_job.js',
+            'hr_recruitment_pro/static/src/css/candidate_detail.css',
         ],
     },
     'license': 'LGPL-3',

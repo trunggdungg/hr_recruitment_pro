@@ -55,6 +55,20 @@ class RecruitmentPortal(CustomerPortal):
                 ('job_id', '=', job.id)
             ])
 
+            # Đếm TOÀN BỘ applicants của recruiter không phụ thuộc vào trang
+        all_job_ids = request.env['hr.job'].sudo().search(
+            [('user_id', '=', user.id)]  # Không dùng search_query ở đây
+        ).ids
+
+        # Tất cả applicants để hiển thị ở tab Ứng viên
+        all_applicants = request.env['hr.applicant'].sudo().search([
+            ('job_id', 'in', all_job_ids)
+        ]) if all_job_ids else request.env['hr.applicant']
+
+        total_applicants_count = request.env['hr.applicant'].sudo().search_count([
+            ('job_id', 'in', all_job_ids)
+        ]) if all_job_ids else 0
+        total_applicants_counts = len(all_applicants)
         job_ids = jobs.ids
         applicants = request.env['hr.applicant'].sudo().search([
             ('job_id', 'in', job_ids)
@@ -65,8 +79,8 @@ class RecruitmentPortal(CustomerPortal):
             'jobs': jobs,
             'applicant_counts': applicant_counts,
             'jobs_count': total_jobs,
-            'applicants': applicants,
-            'applicants_count': len(applicants),
+            'applicants': all_applicants,
+            'applicants_count': total_applicants_counts,
             'active_tab': active_tab,
             'page_name': 'recruitment',
             # search + paging
