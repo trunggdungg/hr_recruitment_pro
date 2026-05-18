@@ -95,7 +95,7 @@ class RecruitmentPortal(CustomerPortal):
     @http.route('/my/recruitment/job/<int:job_id>/toggle_publish',
                 type='json', auth='user', website=True)
     def toggle_job_publish(self, job_id, **kwargs):
-        job = request.env['hr.job'].browse(job_id)
+        job = request.env['hr.job'].sudo().browse(job_id)
         user = request.env.user
 
         if not job.exists() or job.user_id.id != user.id:
@@ -115,7 +115,7 @@ class RecruitmentPortal(CustomerPortal):
     @http.route('/my/recruitment/job/<int:job_id>/close',
                 type='json', auth='user', website=True)
     def close_job(self, job_id, **kwargs):
-        job = request.env['hr.job'].browse(job_id)
+        job = request.env['hr.job'].sudo().browse(job_id)
         user = request.env.user
 
         if not job.exists() or job.user_id.id != user.id:
@@ -136,7 +136,7 @@ class RecruitmentPortal(CustomerPortal):
     @http.route('/my/recruitment/job/<int:job_id>/reopen',
                 type='json', auth='user', website=True)
     def reopen_job(self, job_id, **kwargs):
-        job = request.env['hr.job'].browse(job_id)
+        job = request.env['hr.job'].sudo().browse(job_id)
         user = request.env.user
 
         if not job.exists() or job.user_id.id != user.id:
@@ -221,6 +221,7 @@ class RecruitmentPortal(CustomerPortal):
         try:
             job_vals = {
                 'name': name,
+                'is_portal_job': True,
                 'description': description,
                 'user_id': user.id,
                 'recruiter_id': partner.id,
@@ -462,20 +463,19 @@ class RecruitmentPortal(CustomerPortal):
     # ============ TRANG CHI TIẾT JOB CÔNG KHAI ============
 
     @http.route([
-        '/jobs/<model("hr.job"):job>',  # ← dùng model converter thay vì int
         '/recruitment/detail/<int:job_id>',
-    ], type='http', auth='public', website=True, priority=10)  # priority nhỏ hơn = ưu tiên cao hơn
-    def job_detail_public(self, job=None, job_id=None, **kwargs):
+    ], type='http', auth='public', website=True, priority=5)
+    def job_detail_public(self, job_id=None, **kwargs):
 
-        if job is None and job_id:
-            job = request.env['hr.job'].sudo().browse(job_id)
+        job = request.env['hr.job'].sudo().browse(job_id)
 
         if not job or not job.exists():
             return request.redirect('/jobs')
         
         # Lấy thông tin công ty
         company = job.company_id or request.env.company
-        
+        partner = request.env.user.partner_id
+        # _logger.info('Partner fields: %s', partner.read()[0])
         # Định dạng lương
         salary_display = ''
         if job.salary_level_id:
@@ -503,6 +503,7 @@ class RecruitmentPortal(CustomerPortal):
         values = {
             'job': job,
             'company': company,
+            'partner': partner,
             'salary_display': salary_display,
             'experience_label': experience_labels.get(job.experience_level, ''),
             'remote_label': remote_labels.get(job.remote_policy, ''),
