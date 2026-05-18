@@ -29,6 +29,18 @@ class HrApplicantPortal(models.Model):
         string='Ghi chú phỏng vấn',
         help='Ghi chú về buổi phỏng vấn'
     )
+    interview_email_log = fields.Text(
+        string='Lịch sử email mời phỏng vấn',
+        default='[]',
+        help='JSON log các lần gửi email mời phỏng vấn'
+    )
+    recruiter_partner_id = fields.Many2one(
+        'res.partner',
+        string='Nhà tuyển dụng',
+        related='job_id.recruiter_id',
+        readonly=True,
+        store=False,
+    )
 
 
     def portal_approve(self):
