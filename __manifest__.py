@@ -17,6 +17,8 @@
         'security/location_security.xml',
         'security/ir.model.access.csv',
 
+        'data/cron_expired_jobs.xml',
+
         'views/hr_recruitment_pro_web_views.xml',
         'views/hr_recruitment_salary_filter.xml',
         'views/hr_recruitment_location_filter.xml',
@@ -24,6 +26,7 @@
         'views/hr_job_form_views.xml',
         'views/hr_recruitment_salary_level_views.xml',
         'views/hr_recruitment_location_views.xml',
+        'views/hr_applicant_views.xml',
         'views/menu_views.xml',
         'views/res_partner_views.xml',
         'views/recruitment_portal_views.xml',
