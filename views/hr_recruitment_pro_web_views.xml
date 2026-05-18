@@ -57,7 +57,7 @@
 
                                     <div t-foreach="jobs" t-as="job" class="col-12 col-md-6 col-lg-4 mb-3">
                                         <div t-attf-class="o_job_card #{not job.website_published and 'o_jobs_unpublished' or ''}">
-                                            <a t-attf-href="/jobs/#{ slug(job) }" draggable="false">
+                                            <a t-attf-href="/recruitment/detail/#{job.id}" draggable="false">
                                                 <div class="card-body">
 
                                                     <!-- Logo + Tên job -->
