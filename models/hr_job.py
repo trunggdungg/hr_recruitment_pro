@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
+import logging
 from odoo import models, fields, api
+from datetime import date
 
-
+_logger = logging.getLogger(__name__)
 class HrJobInherit(models.Model):
     _inherit = 'hr.job'
 
@@ -96,6 +97,22 @@ class HrJobInherit(models.Model):
         help='Tỷ lệ lương thử việc so với lương chính thức'
     )
 
+    # is_portal_job = fields.Boolean(
+    #     string='Bài đăng từ Portal',
+    #     default=False,
+    #     help='True nếu bài được đăng bởi nhà tuyển dụng qua portal'
+    # )
+    #
+    # # Thêm field source_type để hiển thị text đẹp hơn
+    # source_type = fields.Selection([
+    #     ('portal', 'Nhà tuyển dụng'),
+    #     ('admin', 'Nội bộ'),
+    # ], string='Nguồn đăng', compute='_compute_source_type', store=False)
+    #
+    # def _compute_source_type(self):
+    #     for job in self:
+    #         job.source_type = 'portal' if job.is_portal_job else 'admin'
+
     @api.model_create_multi
     def create(self, vals_list):
         """Tự động gán recruiter_id nếu user là recruiter"""
@@ -105,3 +122,32 @@ class HrJobInherit(models.Model):
                 if user.partner_id.is_recruiter:
                     vals['recruiter_id'] = user.partner_id.id
         return super().create(vals_list)
+
+    def _cron_auto_unpublish_expired_jobs(self):
+        """Cron: Tự động gỡ bài đăng khi hết hạn"""
+        today = date.today()
+        # Tìm các job đang được đăng, có hạn chót, và đã hết hạn
+        expired_jobs = self.search([
+            ('website_published', '=', True),
+            ('application_deadline', '!=', False),
+            ('application_deadline', '<', today),
+            ('active', '=', True),
+        ])
+        for job in expired_jobs:
+            job.write({'website_published': False})
+            job.message_post(
+                body=f'Tin tuyển dụng đã tự động gỡ do hết hạn vào ngày {job.application_deadline.strftime("%d/%m/%Y")}.',
+                message_type='notification',
+                subtype_xmlid='mail.mt_note',
+            )
+        return True
+
+    def open_website_url(self):
+        self.ensure_one()
+        url = f'/recruitment/detail/{self.id}'
+        _logger.info(">>> open_website_url called, redirecting to: %s", url)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',  # mở tab mới, đổi thành 'self' nếu muốn cùng tab
+        }
