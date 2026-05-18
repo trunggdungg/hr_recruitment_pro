@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
         <!-- ================================================================
              TRANG CHI TIẾT JOB CÔNG KHAI
              URL: /recruitment/detail/<job_id>
@@ -17,7 +16,8 @@
                                 <ol class="breadcrumb mb-0">
                                     <li class="breadcrumb-item">
                                         <a href="/jobs" class="text-white-50 text-decoration-none">
-                                            <i class="fa fa-home"></i> Trang chủ
+                                            <i class="fa fa-home"></i>
+                                            Trang chủ
                                         </a>
                                     </li>
                                     <li class="breadcrumb-item">
@@ -63,18 +63,21 @@
                                 <div class="col-lg-4 mt-4 mt-lg-0">
                                     <div class="card border-0 shadow">
                                         <div class="card-body text-center">
+                                            Mức lương
+                                            <br/>
                                             <h4 class="text-success mb-1">
                                                 <t t-esc="salary_display or 'Thỏa thuận'"/>
                                             </h4>
                                             <p class="text-muted small mb-3">
-                                                <t t-if="job.salary_level_id">Mức lương</t>
+                                                <t t-if="job.salary_level_id"></t>
                                             </p>
-                                          <a t-attf-href="/jobs/apply/#{slug(job)}" class="btn btn-success w-100 py-2 mb-2">
-                                                    <i class="fa fa-paper-plane me-2"></i>Ứng tuyển ngay
-                                                </a>
-                                            <a href="#" class="btn btn-outline-primary w-100 py-2">
-                                                <i class="fa fa-bookmark me-2"></i>Lưu tin tuyển dụng
+                                            <a t-attf-href="/jobs/apply/#{slug(job)}"
+                                               class="btn btn-success w-100 py-2 mb-2">
+                                                <i class="fa fa-paper-plane me-2"></i>Ứng tuyển ngay
                                             </a>
+<!--                                            <a href="#" class="btn btn-outline-primary w-100 py-2">-->
+<!--                                                <i class="fa fa-bookmark me-2"></i>Lưu tin tuyển dụng-->
+<!--                                            </a>-->
                                         </div>
                                     </div>
                                 </div>
@@ -93,7 +96,7 @@
                                     <div class="col-6 col-md-4">
                                         <div class="card border-0 bg-light h-100">
                                             <div class="card-body text-center">
-                                                <i class="fa fa-money-bill text-success fa-2x mb-2"></i>
+                                                <i class="fa fa-money text-success fa-2x mb-2"></i>
                                                 <h6 class="mb-1">Mức lương</h6>
                                                 <p class="small text-muted mb-0">
                                                     <t t-esc="salary_display or 'Thỏa thuận'"/>
@@ -107,7 +110,8 @@
                                                 <i class="fa fa-users text-primary fa-2x mb-2"></i>
                                                 <h6 class="mb-1">Số lượng</h6>
                                                 <p class="small text-muted mb-0">
-                                                    <t t-esc="job.no_of_recruitment"/> người
+                                                    <t t-esc="job.no_of_recruitment"/>
+                                                    người
                                                 </p>
                                             </div>
                                         </div>
@@ -117,12 +121,12 @@
                                             <div class="card-body text-center">
                                                 <i class="fa fa-calendar text-warning fa-2x mb-2"></i>
                                                 <h6 class="mb-1">Hạn nộp</h6>
-                                            <p class="small text-muted mb-0">
-                                                <t t-if="job.application_deadline">
-                                                    <t t-esc="job.application_deadline.strftime('%d/%m/%Y')"/>
-                                                </t>
-                                                <t t-else="">Liên tục</t>
-                                            </p>
+                                                <p class="small text-muted mb-0">
+                                                    <t t-if="job.application_deadline">
+                                                        <t t-esc="job.application_deadline.strftime('%d/%m/%Y')"/>
+                                                    </t>
+                                                    <t t-else="">Liên tục</t>
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -198,11 +202,13 @@
                                                         <td class="text-muted ps-0" style="width: 140px;">
                                                             <i class="fa fa-briefcase me-2 text-primary"></i>Cấp bậc
                                                         </td>
-                                                        <td><t t-esc="experience_label"/></td>
+                                                        <td>
+                                                            <t t-esc="experience_label"/>
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td class="text-muted ps-0">
-                                                            <i class="fa fa-clock me-2 text-primary"></i>Hình thức
+                                                            <i class="fa fa-clock-o me-2 text-primary"></i>Hình thức
                                                         </td>
                                                         <td>
                                                             <t t-esc="job.contract_type_id.name or 'Toàn thời gian'"/>
@@ -210,40 +216,66 @@
                                                     </tr>
                                                     <tr>
                                                         <td class="text-muted ps-0">
-                                                            <i class="fa fa-laptop-house me-2 text-primary"></i>Chế độ
+                                                            <i class="fa fa-desktop me-2 text-primary"></i>Chế độ
                                                         </td>
-                                                        <td><t t-esc="remote_label"/></td>
+                                                        <td>
+                                                            <t t-esc="remote_label"/>
+                                                        </td>
                                                     </tr>
                                                 </table>
                                             </div>
                                             <div class="col-md-6">
                                                 <table class="table table-borderless mb-0">
+
                                                     <t t-if="job.working_hours">
                                                         <tr>
-                                                            <td class="text-muted ps-0" style="width: 140px;">
-                                                                <i class="fa fa-hourglass me-2 text-primary"></i>Giờ làm việc
+                                                            <td class="text-muted ps-0"
+                                                                style="width:140px;display:flex;align-items:center;gap:8px;">
+
+                                                                <i class="fa fa-hourglass text-primary"
+                                                                   style="width:18px;min-width:18px;text-align:center;font-size:15px;"></i>
+
+                                                                <span>Giờ làm việc</span>
                                                             </td>
-                                                            <td><t t-esc="job.working_hours"/></td>
+
+                                                            <td>
+                                                                <t t-esc="job.working_hours"/>
+                                                            </td>
                                                         </tr>
                                                     </t>
+
                                                     <tr>
-                                                        <td class="text-muted ps-0">
-                                                            <i class="fa fa-graduation-cap me-2 text-primary"></i>Trình độ
+                                                        <td class="text-muted ps-0"
+                                                            style="width:140px;display:flex;align-items:center;gap:8px;">
+
+                                                            <i class="fa fa-graduation-cap text-primary"
+                                                               style="width:18px;min-width:18px;text-align:center;font-size:15px;"></i>
+
+                                                            <span>Trình độ</span>
                                                         </td>
+
                                                         <td>
                                                             <t t-esc="job.degree_id.name or 'Không yêu cầu'"/>
                                                         </td>
                                                     </tr>
+
                                                     <tr>
-                                                        <td class="text-muted ps-0">
-                                                            <i class="fa fa-user me-2 text-primary"></i>Giới tính
+                                                        <td class="text-muted ps-0"
+                                                            style="width:140px;display:flex;align-items:center;gap:8px;">
+
+                                                            <i class="fa fa-user text-primary"
+                                                               style="width:18px;min-width:18px;text-align:center;font-size:15px;"></i>
+
+                                                            <span>Giới tính</span>
                                                         </td>
+
                                                         <td>
                                                             <t t-if="job.gender_require == 'both'">Không giới hạn</t>
                                                             <t t-elif="job.gender_require == 'male'">Nam</t>
                                                             <t t-elif="job.gender_require == 'female'">Nữ</t>
                                                         </td>
                                                     </tr>
+
                                                 </table>
                                             </div>
                                         </div>
@@ -278,13 +310,16 @@
                                             <div class="col-md-8">
                                                 <h4 class="mb-1">Ứng tuyển ngay</h4>
                                                 <p class="mb-0 opacity-75">
-                                                    Gửi hồ sơ ứng tuyển cho vị trí <strong><t t-esc="job.name"/></strong>
+                                                    Gửi hồ sơ ứng tuyển cho vị trí
+                                                    <strong>
+                                                        <t t-esc="job.name"/>
+                                                    </strong>
                                                 </p>
                                             </div>
                                             <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                             <a t-attf-href="/jobs/apply/#{slug(job)}" class="btn btn-light btn-lg">
-                                                <i class="fa fa-paper-plane me-2"></i>Nộp hồ sơ
-                                            </a>
+                                                <a t-attf-href="/jobs/apply/#{slug(job)}" class="btn btn-light btn-lg">
+                                                    <i class="fa fa-paper-plane me-2"></i>Nộp hồ sơ
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -305,8 +340,8 @@
                                     </div>
                                     <div class="card-body text-center">
                                         <div class="company-logo mb-3">
-                                            <t t-if="company.logo">
-                                                <img t-att-src="'/web/image/res.company/%s/logo' % company.id"
+                                            <t t-if="partner.avatar_128">
+                                                <img t-att-src="'/web/image/res.partner/%s/avatar_128' % partner.id"
                                                      class="rounded" style="max-height: 80px;"/>
                                             </t>
                                             <t t-else="">
@@ -316,10 +351,14 @@
                                                 </div>
                                             </t>
                                         </div>
-                                        <h5><t t-esc="company.name"/></h5>
+                                        <h5>
+                                            <t t-esc="partner.name"/>
+                                        </h5>
                                         <p class="text-muted small mb-0">
-                                            <t t-esc="company.street"/>
-                                            <t t-if="company.city">, <t t-esc="company.city"/></t>
+                                            <t t-esc="partner.contact_address_inline"/>
+                                            <t t-if="partner.city">,
+                                                <t t-esc="partner.city"/>
+                                            </t>
                                         </p>
                                     </div>
                                 </div>
