@@ -52,10 +52,24 @@
                                         </span>
                                     </p>
                                     <p class="mb-2">
-                                        <strong>Trạng thái Odoo:</strong>
-                                        <span class="badge ms-2" style="background-color: #1E3769; color: #fff;">
-                                            <t t-esc="applicant.stage_id.name if applicant.stage_id else 'Mới'"/>
-                                        </span>
+                                        <strong>Trạng thái hiện tại:</strong>
+                                        <td>
+                                                    <t t-if="applicant.recruiter_feedback == 'pending'">
+                                                        <span class="badge bg-warning text-dark">Chờ xét duyệt</span>
+                                                    </t>
+                                                    <t t-elif="applicant.recruiter_feedback == 'approved'">
+                                                        <span class="badge bg-primary">Đạt</span>
+                                                    </t>
+                                                    <t t-elif="applicant.recruiter_feedback == 'interview'">
+                                                        <span class="badge bg-success">Phỏng vấn</span>
+                                                    </t>
+                                                    <t t-elif="applicant.recruiter_feedback == 'rejected'">
+                                                        <span class="badge bg-danger">Không đạt</span>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span class="badge bg-secondary">-</span>
+                                                    </t>
+                                        </td>
                                     </p>
                                 </div>
                             </div>
@@ -63,58 +77,58 @@
                     </div>
 
                   <!-- ===== PIPELINE STAGE BAR ===== -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body py-3">
-        <div class="d-flex align-items-center gap-2">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body py-3">
+                            <div class="d-flex align-items-center gap-2">
 
-            <div class="pipeline-bar-wrapper flex-grow-1">
+                                <div class="pipeline-bar-wrapper flex-grow-1">
 
-                <a href="#"
-                   t-att-data-action="'pending'"
-                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'pending' else ('s-done' if applicant.recruiter_feedback in ['interview','approved','contracted'] else '')}">
-                    <i class="fa fa-hourglass-half me-1"></i>
-                    Chờ xét duyệt
-                </a>
+                                    <a href="#"
+                                       t-att-data-action="'pending'"
+                                       t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'pending' else ('s-done' if applicant.recruiter_feedback in ['interview','approved','contracted'] else '')}">
+                                        <i class="fa fa-hourglass-half me-1"></i>
+                                        Chờ xét duyệt
+                                    </a>
 
-                <a href="#"
-                   t-att-data-action="'interview'"
-                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'interview' else ('s-done' if applicant.recruiter_feedback in ['approved','contracted'] else '')}">
-                    <i class="fa fa-calendar me-1"></i>
-                    Mời phỏng vấn
+                                    <a href="#"
+                                       t-att-data-action="'interview'"
+                                       t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'interview' else ('s-done' if applicant.recruiter_feedback in ['approved','contracted'] else '')}">
+                                        <i class="fa fa-calendar me-1"></i>
+                                        Mời phỏng vấn
 
-                    <t t-if="applicant.recruiter_feedback == 'interview' and applicant.interview_date">
-                        <span class="badge ms-1" style="background:rgba(255,255,255,0.25);font-size:0.7rem;">
-                            <t t-esc="applicant.interview_date.strftime('%d/%m')"/>
-                        </span>
-                    </t>
-                </a>
+                                        <t t-if="applicant.recruiter_feedback == 'interview' and applicant.interview_date">
+                                            <span class="badge ms-1" style="background:rgba(255,255,255,0.25);font-size:0.7rem;">
+                                                <t t-esc="applicant.interview_date.strftime('%d/%m')"/>
+                                            </span>
+                                        </t>
+                                    </a>
 
-                <a href="#"
-                   t-att-data-action="'approved'"
-                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'approved' else ('s-done' if applicant.recruiter_feedback == 'contracted' else '')}">
-                    <i class="fa fa-thumbs-up me-1"></i>
-                    Đạt yêu cầu
-                </a>
+                                    <a href="#"
+                                       t-att-data-action="'approved'"
+                                       t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'approved' else ('s-done' if applicant.recruiter_feedback == 'contracted' else '')}">
+                                        <i class="fa fa-thumbs-up me-1"></i>
+                                        Đạt yêu cầu
+                                    </a>
 
-                <a href="#"
-                   t-att-data-action="'contracted'"
-                   t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'contracted' else ''}">
-                    <i class="fa fa-file-text me-1"></i>
-                    Hợp đồng ký 12
-                </a>
+                                    <a href="#"
+                                       t-att-data-action="'contracted'"
+                                       t-attf-class="pipeline-stage-arrow #{'s-active' if applicant.recruiter_feedback == 'contracted' else ''}">
+                                        <i class="fa fa-file-text me-1"></i>
+                                        Hợp đồng ký 12
+                                    </a>
 
-            </div>
+                                </div>
 
-            <a href="#"
-               t-att-data-action="'rejected'"
-               t-attf-class="pipeline-fail-btn #{'s-active' if applicant.recruiter_feedback == 'rejected' else ''}">
-                <i class="fa fa-times-circle me-1"></i>
-                Fail
-            </a>
+                                <a href="#"
+                                   t-att-data-action="'rejected'"
+                                   t-attf-class="pipeline-fail-btn #{'s-active' if applicant.recruiter_feedback == 'rejected' else ''}">
+                                    <i class="fa fa-times-circle me-1"></i>
+                                    Fail
+                                </a>
 
-        </div>
-    </div>
-</div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Các tab thông tin -->
                     <ul class="nav nav-tabs mb-4" role="tablist">
@@ -175,12 +189,6 @@
                                                 <t t-esc="applicant.partner_phone or '-'"/>
                                             </p>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="text-muted small">Địa chỉ</label>
-                                            <p class="mb-0">
-                                                <t t-esc="applicant.partner_id.street or '-'"/>
-                                            </p>
-                                        </div>
                                     </div>
 
                                     <div class="row mb-3">
@@ -228,7 +236,7 @@
                                                   method="post">
                                                 <input type="hidden" name="csrf_token"
                                                        t-att-value="request.csrf_token()"/>
-                                                <label class="text-muted small">Ghi chú nhà tuyển dụng</label>
+                                                <label class="text-muted small">Ghi chú của nhà tuyển dụng</label>
                                                 <textarea class="form-control" name="note" rows="3"
                                                           placeholder="Nhập ghi chú về ứng viên này..."><t t-esc="applicant.recruiter_note or ''"/></textarea>
                                                 <div class="mt-2">
@@ -247,58 +255,146 @@
 
                         <!-- Tab: Lịch phỏng vấn -->
                         <div class="tab-pane fade" id="interview-tab">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <t t-if="applicant.recruiter_feedback != 'interview'">
-                                        <div class="text-center py-5 text-muted">
-                                            <i class="fa fa-lock fa-3x mb-3"></i>
-                                            <p class="mb-0">Cần chuyển sang <strong>"Mời phỏng vấn"</strong> trước khi đặt lịch.</p>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <t t-if="applicant.recruiter_feedback != 'interview'">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fa fa-lock fa-3x mb-3 d-block"></i>
+                                    <p class="mb-0">Cần chuyển sang <strong>"Mời phỏng vấn"</strong> trước.</p>
+                                </div>
+                            </t>
+                            <t t-else="">
+
+                                <!-- Alert kết quả -->
+                                <t t-if="msg == 'sent'">
+                                    <div class="alert alert-success alert-dismissible">
+                                        <i class="fa fa-check-circle me-2"></i>
+                                        <strong>Đã gửi!</strong> Email mời phỏng vấn đã được gửi thành công.
+                                    </div>
+                                </t>
+                                <t t-elif="msg == 'error'">
+                                    <div class="alert alert-danger">
+                                        <i class="fa fa-exclamation-circle me-2"></i>
+                                        Gửi email thất bại. Vui lòng thử lại.
+                                    </div>
+                                </t>
+                                <t t-elif="msg == 'no_date'">
+                                    <div class="alert alert-warning">
+                                        <i class="fa fa-warning me-2"></i>
+                                        Vui lòng chọn ngày giờ phỏng vấn.
+                                    </div>
+                                </t>
+
+                                <!-- Form gửi email -->
+                                <h5 class="card-title mb-3">
+                                    <i class="fa fa-envelope me-2"></i>Gửi email mời phỏng vấn
+                                </h5>
+
+                                <form t-attf-action="/my/recruitment/applicant/#{applicant.id}/send_interview_email"
+                                      method="post">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Ngày giờ phỏng vấn <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="datetime-local" class="form-control" name="interview_date"
+                                                   required="required"
+                                                   t-att-value="applicant.interview_date.strftime('%Y-%m-%dT%H:%M') if applicant.interview_date else ''"/>
                                         </div>
+
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Địa điểm / Link meeting</label>
+                                        <input type="text" class="form-control" name="location"
+                                               placeholder="VD: Tầng 5, 123 Nguyễn Huệ  hoặc  meet.google.com/abc-xyz"/>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Ghi chú thêm cho ứng viên</label>
+                                        <textarea class="form-control" name="extra_note" rows="3"
+                                                  placeholder="Yêu cầu chuẩn bị, dress code, mang theo hồ sơ..."/>
+                                    </div>
+
+                                    <!-- Preview thông tin gửi -->
+                                    <div class="alert alert-light border mb-3 py-2">
+                                        <div class="small text-muted">
+                                            <i class="fa fa-paper-plane me-1"></i>
+                                            Gửi đến: <strong><t t-esc="applicant.email_from or 'Chưa có email'"/></strong>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <i class="fa fa-tag me-1"></i>
+                                            Tiêu đề: <em>Thư mời phỏng vấn - <t t-esc="applicant.job_id.name"/></em>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn"
+                                            style="background-color:#1E3769;color:#fff;">
+                                        <i class="fa fa-paper-plane me-1"></i>Gửi email mời phỏng vấn
+                                    </button>
+                                </form>
+
+                                <!-- Lịch sử gửi email -->
+                                <hr class="my-4"/>
+                                <h6 class="mb-3">
+                                    <i class="fa fa-history me-1 text-muted"></i>
+                                    Lịch sử gửi email
+                                    <t t-if="interview_email_log">
+                                        <span class="badge ms-1" style="background:#1E3769;">
+                                            <t t-esc="len(interview_email_log)"/>
+                                        </span>
                                     </t>
-                                    <t t-else="">
-                                        <h5 class="card-title mb-3">
-                                            <i class="fa fa-calendar me-2"></i>Hẹn lịch phỏng vấn
-                                        </h5>
+                                </h6>
 
-                                        <t t-if="applicant.interview_date">
-                                            <div class="alert alert-success mb-3">
-                                                <i class="fa fa-check-circle me-2"></i>
-                                                <strong>Đã hẹn lịch:</strong>
-                                                <t t-esc="applicant.interview_date.strftime('%H:%M - %d/%m/%Y')"/>
-                                            </div>
-                                        </t>
-
-                                        <form t-attf-action="/my/recruitment/applicant/#{applicant.id}/schedule_interview"
-                                              method="post">
-                                            <input type="hidden" name="csrf_token"
-                                                   t-att-value="request.csrf_token()"/>
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">
-                                                        Ngày giờ phỏng vấn <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="datetime-local" class="form-control"
-                                                           name="interview_date"
-                                                           t-att-value="applicant.interview_date.strftime('%Y-%m-%dT%H:%M') if applicant.interview_date else ''"/>
+                                <t t-if="interview_email_log">
+                                    <t t-foreach="interview_email_log" t-as="log">
+                                        <div class="d-flex mb-3 align-items-start">
+                                            <!-- Icon timeline -->
+                                            <div class="me-3 text-center" style="min-width:36px;">
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                                     style="width:36px;height:36px;background:#1E3769;color:#fff;">
+                                                    <i class="fa fa-envelope" style="font-size:13px;"></i>
                                                 </div>
                                             </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Ghi chú phỏng vấn</label>
-                                                <textarea class="form-control" name="interview_note" rows="3"
-                                                          placeholder="Địa điểm, hình thức, yêu cầu chuẩn bị..."><t t-esc="applicant.interview_note or ''"/></textarea>
+                                            <!-- Card log -->
+                                            <div class="flex-grow-1 border rounded p-3 bg-light">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <strong class="small">Email mời phỏng vấn</strong>
+                                                    <small class="text-muted">
+                                                        <i class="fa fa-clock-o me-1"></i>
+                                                        <t t-esc="log.get('sent_at', '-')"/>
+                                                    </small>
+                                                </div>
+                                                <div class="small text-muted mb-1">
+                                                    <i class="fa fa-calendar me-1"></i>
+                                                    Lịch PV: <strong><t t-esc="log.get('interview_date', '-')"/></strong>
+                                                </div>
+                                                <div class="small text-muted mb-1">
+                                                    <i class="fa fa-map-marker me-1"></i>
+                                                    <t t-esc="log.get('location', '-')"/>
+                                                </div>
+                                                <div class="small text-muted">
+                                                    <i class="fa fa-user me-1"></i>
+                                                    Gửi bởi: <t t-esc="log.get('sent_by', '-')"/>
+                                                </div>
                                             </div>
-                                            <button type="submit" class="btn"
-                                                    style="background-color: #1E3769; color: #fff;">
-                                                <i class="fa fa-calendar-check-o me-1"></i>
-                                                <t t-if="applicant.interview_date">Cập nhật lịch</t>
-                                                <t t-else="">Xác nhận lịch phỏng vấn</t>
-                                            </button>
-                                        </form>
+                                        </div>
                                     </t>
-                                </div>
-                            </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="fa fa-inbox fa-2x d-block mb-2"></i>
+                                        <small>Chưa có email nào được gửi.</small>
+                                    </div>
+                                </t>
+
+                            </t>
                         </div>
                     </div>
+                </div>
+            </div>
 
                     <!-- Toast thông báo -->
                     <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
