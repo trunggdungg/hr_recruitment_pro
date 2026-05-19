@@ -187,7 +187,7 @@ class RecruitmentPortal(CustomerPortal):
     @http.route('/my/recruitment/job/submit', type='http', auth='user', website=True,
                 csrf=False, methods=['POST'])
     def portal_submit_job(self, **post):
-        """Xử lý submit form tạo tin tuyển dụng"""
+        """Xử lý submit form tạo tin tuyển dụng - BÀI SẼ Ở TRẠNG THÁI CHỜ DUYỆT"""
         partner = request.env.user.partner_id
         user = request.env.user
 
@@ -202,7 +202,7 @@ class RecruitmentPortal(CustomerPortal):
         skill_ids = request.httprequest.form.getlist('skill_ids')
         contract_type_id = post.get('contract_type_id')
         degree_id = post.get('degree_id')
-        
+
         # Các trường mới
         requirements = post.get('requirements', '')
         benefits = post.get('benefits', '')
@@ -213,7 +213,6 @@ class RecruitmentPortal(CustomerPortal):
         age_require = post.get('age_require', '')
         trial_period = post.get('trial_period', 2)
         application_deadline = post.get('application_deadline') or False
-
 
         if not name:
             return request.redirect('/my/recruitment/job/create?error=name_required')
@@ -236,6 +235,9 @@ class RecruitmentPortal(CustomerPortal):
                 'age_require': age_require,
                 'trial_period': int(trial_period) if trial_period else 2,
                 'application_deadline': application_deadline,
+                # QUAN TRỌNG: Set trạng thái chờ duyệt
+                'moderation_state': 'pending',
+                'website_published': False,  # KHÔNG tự động publish
             }
 
             if salary_level_id:
@@ -247,20 +249,63 @@ class RecruitmentPortal(CustomerPortal):
             if contract_type_id:
                 job_vals['contract_type_id'] = int(contract_type_id)
 
+            # Lưu skill_ids để xử lý sau khi tạo job
+            selected_skill_ids = []
             if skill_ids:
-                ids = [int(s) for s in skill_ids if s.isdigit()]
-                if ids:
-                    job_vals['skill_ids'] = [(6, 0, ids)]
+                selected_skill_ids = [int(s) for s in skill_ids if s.isdigit()]
 
             job = request.env['hr.job'].sudo().create(job_vals)
 
-            _logger.info('Created new job %s by recruiter %s', job.id, user.id)
-            return request.redirect('/my/recruitment?tab=jobs&created=' + str(job.id))
+            # Tạo job skill records sau khi job đã tồn tại
+            if selected_skill_ids:
+                SkillType = request.env['hr.skill.type'].sudo()
+                JobSkill = request.env['hr.job.skill'].sudo()
+                for sid in selected_skill_ids:
+                    skill = request.env['hr.skill'].sudo().browse(sid)
+                    if skill.exists():
+                        # Lấy default skill level cho skill type
+                        default_level = SkillType.search([], limit=1)
+                        if skill.skill_type_id and skill.skill_type_id.skill_level_ids:
+                            default_level = skill.skill_type_id.skill_level_ids.filtered('default_level') or skill.skill_type_id.skill_level_ids[0]
+                        JobSkill.create({
+                            'job_id': job.id,
+                            'skill_id': sid,
+                            'skill_type_id': skill.skill_type_id.id,
+                            'skill_level_id': default_level.id if default_level else False,
+                        })
+                _logger.info('Created job %s with skills: %s', job.id, selected_skill_ids)
+
+            _logger.info('Created new job %s by recruiter %s (pending moderation)', job.id, user.id)
+            # Chuyển hướng đến trang thông báo chờ duyệt
+            return request.redirect('/my/recruitment/job/' + str(job.id) + '/submitted?action=create')
 
         except Exception as e:
             _logger.error('Error creating job: %s', str(e), exc_info=True)
             import urllib.parse
             return request.redirect('/my/recruitment/job/create?error=' + urllib.parse.quote(str(e)))
+
+    @http.route('/my/recruitment/job/<int:job_id>/submitted', type='http', auth='user', website=True)
+    def portal_job_submitted(self, job_id, **kwargs):
+        """Trang thông báo sau khi submit thành công - chờ duyệt"""
+        partner = request.env.user.partner_id
+        user = request.env.user
+
+        if not partner.is_recruiter:
+            return request.redirect('/')
+
+        job = request.env['hr.job'].sudo().browse(job_id)
+        if not job.exists() or job.user_id.id != user.id:
+            return request.redirect('/my/recruitment?tab=jobs')
+
+        # Xác định action type: 'create' hoặc 'edit'
+        action_type = kwargs.get('action', 'create')
+
+        values = {
+            'job': job,
+            'action_type': action_type,
+            'page_name': 'job_submitted',
+        }
+        return request.render("hr_recruitment_pro.portal_job_submitted", values)
 
     @http.route('/my/recruitment/job/<int:job_id>/edit', type='http', auth='user', website=True)
     def portal_edit_job(self, job_id, **kwargs):
@@ -271,9 +316,16 @@ class RecruitmentPortal(CustomerPortal):
         if not partner.is_recruiter:
             return request.redirect('/')
 
+        # Load job với các fields cần thiết (bao gồm skill_ids)
         job = request.env['hr.job'].sudo().browse(job_id)
         if not job.exists() or job.user_id.id != user.id:
             return request.redirect('/my/recruitment?tab=jobs')
+
+        # Load để trigger computed fields
+        job.read(['name', 'description', 'requirements', 'benefits', 'salary_level_id', 'location_id',
+                  'contract_type_id', 'degree_id', 'experience_level', 'remote_policy', 'working_hours',
+                  'gender_require', 'age_require', 'trial_period', 'application_deadline',
+                  'job_skill_ids', 'skill_ids'])
 
         import json
         salary_levels = request.env['hr.recruitment.salary.level'].sudo().search([], order='sequence asc')
@@ -301,7 +353,7 @@ class RecruitmentPortal(CustomerPortal):
     @http.route('/my/recruitment/job/<int:job_id>/edit/submit', type='http', auth='user',
                 website=True, csrf=False, methods=['POST'])
     def portal_edit_job_submit(self, job_id, **post):
-        """Xử lý submit form chỉnh sửa"""
+        """Xử lý submit form chỉnh sửa - BÀI SẼ QUAY VỀ TRẠNG THÁI CHỜ DUYỆT"""
         partner = request.env.user.partner_id
         user = request.env.user
 
@@ -333,6 +385,8 @@ class RecruitmentPortal(CustomerPortal):
                 'age_require': post.get('age_require', ''),
                 'trial_period': int(post.get('trial_period', 2) or 2),
                 'application_deadline': application_deadline,
+                # QUAN TRỌNG: Quay về trạng thái chờ duyệt khi sửa
+                'moderation_state': 'pending',
             }
 
             salary_level_id = post.get('salary_level_id')
@@ -345,15 +399,38 @@ class RecruitmentPortal(CustomerPortal):
             write_vals['degree_id'] = int(degree_id) if degree_id else False
             write_vals['contract_type_id'] = int(contract_type_id) if contract_type_id else False
 
+            # Xử lý skills - xóa cũ và tạo mới sau khi write
+            selected_skill_ids = []
             if skill_ids:
-                ids = [int(s) for s in skill_ids if s.isdigit()]
-                write_vals['skill_ids'] = [(6, 0, ids)]
-            else:
-                write_vals['skill_ids'] = [(5, 0, 0)]  # xóa hết kỹ năng cũ nếu bỏ chọn
-
+                selected_skill_ids = [int(s) for s in skill_ids if s.isdigit()]
+            
+            # Xóa skill cũ trước
+            job.job_skill_ids.unlink()
+            
+            # Write các trường khác trước
             job.write(write_vals)
-            _logger.info('Updated job %s by recruiter %s', job.id, user.id)
-            return request.redirect('/my/recruitment?tab=jobs&updated=' + str(job.id))
+            
+            # Tạo job skill records mới sau khi job đã được write
+            if selected_skill_ids:
+                SkillType = request.env['hr.skill.type'].sudo()
+                JobSkill = request.env['hr.job.skill'].sudo()
+                for sid in selected_skill_ids:
+                    skill = request.env['hr.skill'].sudo().browse(sid)
+                    if skill.exists():
+                        default_level = False
+                        if skill.skill_type_id and skill.skill_type_id.skill_level_ids:
+                            default_level = skill.skill_type_id.skill_level_ids.filtered('default_level') or skill.skill_type_id.skill_level_ids[0]
+                        JobSkill.create({
+                            'job_id': job.id,
+                            'skill_id': sid,
+                            'skill_type_id': skill.skill_type_id.id,
+                            'skill_level_id': default_level.id if default_level else False,
+                        })
+
+            _logger.info('Updated job %s by recruiter %s - set to pending moderation', job.id, user.id)
+
+            # Chuyển hướng đến trang thông báo chờ duyệt (giống khi tạo mới)
+            return request.redirect('/my/recruitment/job/' + str(job.id) + '/submitted?action=edit')
 
         except Exception as e:
             _logger.error('Error updating job %s: %s', job_id, str(e), exc_info=True)

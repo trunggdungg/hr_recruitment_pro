@@ -7,6 +7,8 @@ _logger = logging.getLogger(__name__)
 class HrJobInherit(models.Model):
     _inherit = 'hr.job'
 
+    hr_job_photo = fields.Image(string='Ảnh Công Việc', attachment=True)
+    is_portal_job = fields.Boolean(string='Job từ Portal', default=False, index=True)
     recruiter_id = fields.Many2one(
         'res.partner',
         string='Nhà tuyển dụng',
@@ -37,10 +39,7 @@ class HrJobInherit(models.Model):
         tracking=True,
         help='Trình độ học vấn yêu cầu cho vị trí này'
     )
-    job_skills = fields.Text(
-        string='Kỹ năng mong đợi',
-        help='Các kỹ năng mong đợi từ ứng viên'
-    )
+    # NOTE: skill_ids is already defined in hr_skills module as computed from job_skill_ids
     requirements = fields.Html(
         string='Yêu cầu ứng viên',
         sanitize=True,  # ← đổi thành True
@@ -97,21 +96,92 @@ class HrJobInherit(models.Model):
         help='Tỷ lệ lương thử việc so với lương chính thức'
     )
 
-    # is_portal_job = fields.Boolean(
-    #     string='Bài đăng từ Portal',
-    #     default=False,
-    #     help='True nếu bài được đăng bởi nhà tuyển dụng qua portal'
-    # )
-    #
-    # # Thêm field source_type để hiển thị text đẹp hơn
-    # source_type = fields.Selection([
-    #     ('portal', 'Nhà tuyển dụng'),
-    #     ('admin', 'Nội bộ'),
-    # ], string='Nguồn đăng', compute='_compute_source_type', store=False)
-    #
-    # def _compute_source_type(self):
-    #     for job in self:
-    #         job.source_type = 'portal' if job.is_portal_job else 'admin'
+    # Thêm field source_type để hiển thị text đẹp hơn
+    source_type = fields.Selection([
+        ('portal', 'Nhà tuyển dụng'),
+        ('admin', 'Nội bộ'),
+    ], string='Nguồn đăng', compute='_compute_source_type', store=False)
+
+    def _compute_source_type(self):
+        for job in self:
+            job.source_type = 'portal' if job.recruiter_id else 'admin'
+
+    # ========== MODERATION FIELDS ==========
+    moderation_state = fields.Selection([
+        ('draft', 'Nháp'),
+        ('pending', 'Chờ duyệt'),
+        ('approved', 'Đã duyệt'),
+        ('rejected', 'Từ chối'),
+    ], string='Trạng thái duyệt', default='draft', tracking=True, copy=False)
+
+    moderation_note = fields.Text(
+        string='Ghi chú duyệt',
+        help='Ghi chú của admin khi duyệt/từ chối bài'
+    )
+    moderation_date = fields.Datetime(
+        string='Ngày duyệt',
+        readonly=True,
+        copy=False
+    )
+    moderator_id = fields.Many2one(
+        'res.users',
+        string='Người duyệt',
+        readonly=True,
+        copy=False
+    )
+
+    def action_moderation_pending(self):
+        """Chuyển sang trạng thái chờ duyệt (portal user submit)"""
+        self.write({
+            'moderation_state': 'pending',
+            'moderation_note': False,
+        })
+
+    def action_moderation_approve(self, note=False):
+        """Admin duyệt bài"""
+        self.ensure_one()
+        self.write({
+            'moderation_state': 'approved',
+            'moderation_date': fields.Datetime.now(),
+            'moderator_id': self.env.user.id,
+            'moderation_note': note or False,
+            'website_published': True,  # Auto publish khi duyệt
+        })
+        self.message_post(
+            body=f'Bài tuyển dụng đã được Admin duyệt và xuất bản.',
+            message_type='notification',
+            subtype_xmlid='mail.mt_note',
+        )
+
+    def action_moderation_reject(self, note=False):
+        """Admin từ chối bài"""
+        self.ensure_one()
+        self.write({
+            'moderation_state': 'rejected',
+            'moderation_date': fields.Datetime.now(),
+            'moderator_id': self.env.user.id,
+            'moderation_note': note or False,
+            'website_published': False,
+        })
+        self.message_post(
+            body=f'Bài tuyển dụng đã bị từ chối. Lý do: {note or "Không có"}',
+            message_type='notification',
+            subtype_xmlid='mail.mt_note',
+        )
+
+    def action_moderation_reset_draft(self):
+        """Yêu cầu sửa lại - reset về draft"""
+        self.ensure_one()
+        self.write({
+            'moderation_state': 'draft',
+            'moderation_note': False,
+            'website_published': False,
+        })
+        self.message_post(
+            body='Admin yêu cầu chỉnh sửa lại bài tuyển dụng.',
+            message_type='notification',
+            subtype_xmlid='mail.mt_note',
+        )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -121,6 +191,18 @@ class HrJobInherit(models.Model):
             if not vals.get('recruiter_id'):
                 if user.partner_id.is_recruiter:
                     vals['recruiter_id'] = user.partner_id.id
+                    # Portal user tạo bài -> chờ duyệt
+                    vals.setdefault('moderation_state', 'pending')
+                else:
+                    # Admin tạo bài -> tự động duyệt
+                    vals.setdefault('moderation_state', 'approved')
+            
+            # Nếu là bài từ portal (is_portal_job=True) -> cần duyệt
+            # Nếu là bài từ admin (is_portal_job=False/unset) -> tự động duyệt (trừ khi đã set khác)
+            if vals.get('is_portal_job'):
+                vals.setdefault('moderation_state', 'pending')
+            else:
+                vals.setdefault('moderation_state', 'approved')
         return super().create(vals_list)
 
     def _cron_auto_unpublish_expired_jobs(self):
@@ -141,6 +223,17 @@ class HrJobInherit(models.Model):
                 subtype_xmlid='mail.mt_note',
             )
         return True
+
+    def write(self, vals):
+        """Khi portal user sửa bài đã duyệt -> tự động reset về pending"""
+        user = self.env.user
+        # Chỉ xử lý batch write cho 1 record để đơn giản
+        if len(self) == 1:
+            job = self
+            if job.is_portal_job and job.moderation_state == 'approved':
+                if user.partner_id.is_recruiter and job.recruiter_id.id == user.partner_id.id:
+                    vals = {**vals, 'moderation_state': 'pending', 'website_published': False}
+        return super().write(vals)
 
     def open_website_url(self):
         self.ensure_one()
