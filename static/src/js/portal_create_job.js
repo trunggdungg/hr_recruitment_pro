@@ -276,6 +276,17 @@
             return {id: String(li.dataset.id), label: li.dataset.label, el: li};
         });
 
+        // Pre-load selected skills (for edit page) - defer slightly to ensure inline script ran
+        setTimeout(function() {
+            if (window._preselectedSkills && Array.isArray(window._preselectedSkills)) {
+                window._preselectedSkills.forEach(function(skill) {
+                    if (skill && skill.id && skill.label) {
+                        addSkillTag(String(skill.id), skill.label);
+                    }
+                });
+            }
+        }, 100);
+
         // Search input
         searchInp.addEventListener('focus', function () {
             filterSkillDropdown(this.value);
@@ -300,7 +311,8 @@
 
         // Đóng dropdown khi click ngoài
         document.addEventListener('click', function (e) {
-            if (!document.getElementById('skill_field').contains(e.target)) {
+            var skillField = document.getElementById('skill_field');
+            if (skillField && !skillField.contains(e.target)) {
                 dropdown.classList.add('d-none');
             }
         });
@@ -343,23 +355,28 @@
 
         // Hidden input
         var form = document.getElementById('job_form');
-        var inp = document.createElement('input');
-        inp.type = 'hidden';
-        inp.name = 'skill_ids';
-        inp.value = id;
-        inp.id = 'skill_hidden_' + id;
-        form.appendChild(inp);
+        if (form) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.name = 'skill_ids';
+            inp.value = id;
+            inp.id = 'skill_hidden_' + id;
+            form.appendChild(inp);
+        }
 
         // Tag chip
-        var tag = document.createElement('span');
-        tag.className = 'm2m-tag';
-        tag.dataset.id = id;
-        tag.innerHTML = label
-            + ' <button type="button" class="m2m-tag-remove" title="Xóa">×</button>';
-        tag.querySelector('.m2m-tag-remove').addEventListener('click', function () {
-            removeSkillTag(id);
-        });
-        document.getElementById('skill_tags_wrap').appendChild(tag);
+        var tagsWrap = document.getElementById('skill_tags_wrap');
+        if (tagsWrap) {
+            var tag = document.createElement('span');
+            tag.className = 'm2m-tag';
+            tag.dataset.id = id;
+            tag.innerHTML = label
+                + ' <button type="button" class="m2m-tag-remove" title="Xóa">×</button>';
+            tag.querySelector('.m2m-tag-remove').addEventListener('click', function () {
+                removeSkillTag(id);
+            });
+            tagsWrap.appendChild(tag);
+        }
 
         // Ẩn khỏi dropdown
         skillAllOpts.forEach(function (o) {

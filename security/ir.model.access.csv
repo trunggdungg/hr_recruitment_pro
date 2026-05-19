@@ -3,3 +3,4 @@ access_salary_user,access.salary.user,model_hr_recruitment_salary_level,hr_recru
 access_salary_manager,access.salary.manager,model_hr_recruitment_salary_level,hr_recruitment_pro.salary_group_manager,1,1,1,1
 access_location_user,access.location.user,model_hr_recruitment_location,hr_recruitment_pro.location_group_user,1,1,1,0
 access_location_manager,access.location.manager,model_hr_recruitment_location,hr_recruitment_pro.location_group_manager,1,1,1,1
+access_moderation_wizard_user,access.moderation.wizard.user,model_moderation_wizard,hr_recruitment.group_hr_recruitment_user,1,1,1,0

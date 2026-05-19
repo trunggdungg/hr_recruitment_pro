@@ -26,8 +26,8 @@
                         <a href="/my/recruitment"
                            class="o_portal_docs_entry d-flex align-items-center text-decoration-none text-reset"
                            style="background-color: #f8f9fa; border-radius: 6.4px; padding: 16px; gap: 16px; height: 104px;">
-                            <img src="/eaut_timeoff/static/src/img/e_timeoff.png"
-                                 style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;"/>
+                            <img src="/hr_recruitment_pro/static/src/img/recruitment3.png"
+                                 style="width: 59px; height: 59px; object-fit: contain; flex-shrink: 0;"/>
                             <div>
                                 <p class="mb-0 fs-5">Quản lý tuyển dụng</p>
                                 <small class="text-muted" style="font-size: 16px;">Đăng tin tuyển dụng và quản lý ứng viên</small>
@@ -146,11 +146,26 @@
                                 </div>
 
                                 <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
-                                    <t t-if="job.website_published">
-                                        <span class="badge bg-success">Đã đăng</span>
+                                    <!-- Badge trạng thái duyệt -->
+                                    <t t-if="job.moderation_state == 'pending'">
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fa fa-clock-o me-1"></i>Chờ duyệt
+                                        </span>
+                                    </t>
+                                    <t t-elif="job.moderation_state == 'approved'">
+                                        <span class="badge bg-success">
+                                            <i class="fa fa-check me-1"></i>Đã duyệt
+                                        </span>
+                                    </t>
+                                    <t t-elif="job.moderation_state == 'rejected'">
+                                        <span class="badge bg-danger">
+                                            <i class="fa fa-times me-1"></i>Bị từ chối
+                                        </span>
                                     </t>
                                     <t t-else="">
-                                        <span class="badge bg-secondary">Nháp</span>
+                                        <span class="badge bg-secondary">
+                                            <i class="fa fa-edit me-1"></i>Nháp
+                                        </span>
                                     </t>
                                     <span class="badge" style="background:#E6F1FB; color:#0C447C; font-size:11px;">
                                         <i class="fa fa-users me-1"></i>
@@ -171,6 +186,14 @@
                                         </t></div>
                             <hr class="my-2" style="opacity:0.1;"/>
 
+                            <!-- Thông báo trạng thái moderation -->
+                            <t t-if="job.moderation_state == 'rejected' and job.moderation_note">
+                                <div class="alert alert-danger py-2 mb-2" style="font-size:13px;">
+                                    <i class="fa fa-exclamation-triangle me-1"></i>
+                                    <strong>Lý do từ chối:</strong> <t t-esc="job.moderation_note"/>
+                                </div>
+                            </t>
+
                             <!-- Actions -->
                             <div class="d-flex flex-wrap gap-1 mt-1">
                                 <a t-attf-href="/recruitment/detail/#{job.id}"
@@ -184,22 +207,36 @@
                                    style="font-size:15px;">
                                     <i class="fa fa-pencil me-1"></i>Sửa
                                 </a>
-                                <t t-if="job.website_published">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-success"
-                                            style="font-size:15px;"
-                                            t-attf-onclick="toggleJobPublish(#{job.id}, true)">
-                                        <i class="fa fa-eye-slash me-1"></i>Huỷ xuất bản
-                                    </button>
+
+                                <!-- Nút Đăng bài - chỉ enable khi đã approved -->
+                                <t t-if="job.moderation_state == 'approved'">
+                                    <t t-if="job.website_published">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-success"
+                                                style="font-size:15px;"
+                                                t-attf-onclick="toggleJobPublish(#{job.id}, true)">
+                                            <i class="fa fa-eye-slash me-1"></i>Huỷ xuất bản
+                                        </button>
+                                    </t>
+                                    <t t-else="">
+                                        <button type="button"
+                                                class="btn btn-sm btn-success"
+                                                style="font-size:15px;"
+                                                t-attf-onclick="toggleJobPublish(#{job.id}, false)">
+                                            <i class="fa fa-globe me-1"></i>Đăng bài
+                                        </button>
+                                    </t>
                                 </t>
                                 <t t-else="">
+                                    <!-- Disable button nếu chưa duyệt -->
                                     <button type="button"
-                                            class="btn btn-sm btn-success"
-                                            style="font-size:15px;"
-                                            t-attf-onclick="toggleJobPublish(#{job.id}, false)">
-                                        <i class="fa fa-globe me-1"></i>Đăng bài
+                                            class="btn btn-sm btn-secondary"
+                                            style="font-size:15px; opacity:0.6;"
+                                            disabled="disabled">
+                                        <i class="fa fa-globe me-1"></i>Chờ duyệt
                                     </button>
                                 </t>
+
                                 <t t-if="job.active">
                                     <t t-if="not job.website_published">
                                         <button type="button"
@@ -1107,6 +1144,12 @@
                                            placeholder="Tìm kỹ năng..."
                                            autocomplete="off"
                                            style="min-width:120px;"/>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary flex-shrink-0"
+                                            onclick="event.stopPropagation(); openCreateModal('skill')"
+                                            title="Tạo kỹ năng mới">
+                                        <i class="fa fa-plus me-1"></i>Tạo mới
+                                    </button>
                                     <ul class="skill-dropdown list-unstyled d-none" id="skill_dropdown">
                                         <t t-if="skills">
                                             <t t-foreach="skills" t-as="skill">
@@ -1119,6 +1162,7 @@
                                     </ul>
                                 </div>
                             </div>
+                            <div class="form-text">Gõ để tìm kỹ năng, hoặc bấm "Tạo mới" để thêm kỹ năng chưa có</div>
                             <!-- Pre-fill kỹ năng hiện tại vào JS -->
                             <script>
                                 window._preselectedSkills = [
@@ -1254,7 +1298,128 @@
             };
     </script>
     <script src="/hr_recruitment_pro/static/src/js/portal_create_job.js"></script>
+
+        <!-- ===== MODAL TẠO NHANH (dùng chung cho edit) ===== -->
+        <div class="modal fade" id="quickCreateModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="qcModalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body" id="qcModalBody">
+                    </div>
+                    <div class="modal-footer">
+                        <div class="alert alert-danger py-1 px-2 d-none" id="qcModalError" role="alert" style="font-size:0.85rem;"></div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn" id="qcModalSave"
+                                style="background-color: #1E3769; color: #fff;"
+                                onclick="window.openCreateModal ? null : submitModal()">
+                            <i class="fa fa-save me-1"></i>Lưu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast notification -->
+        <div id="qc-toast" class="toast position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="z-index:9999;">
+            <div class="d-flex">
+                <div class="toast-body" id="qc-toast-msg" style="font-size:0.9rem;"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+            </div>
+        </div>
+
     </t>
 </template>
+
+        <!-- ========== TRANG THÔNG BÁO CHỜ DUYỆT - JOB ========== -->
+        <template id="portal_job_submitted" name="Bài viết đã gửi - Chờ duyệt">
+            <t t-call="portal.portal_layout">
+                <div class="container py-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8 col-lg-6">
+                            <div class="card shadow-lg border-0 text-center">
+                                <div class="card-body p-5">
+                                    <!-- Icon thành công -->
+                                    <div class="mb-4">
+                                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                                             style="width: 80px; height: 80px; background: linear-gradient(135deg, #17a2b8 0%, #6610f2 100%);">
+                                            <i class="fa fa-clock-o text-white" style="font-size: 36px;"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tiêu đề - Dynamic theo action_type -->
+                                    <h2 class="mb-3" style="color: #1E3769;">
+                                        <t t-if="action_type == 'edit'">
+                                            Cập nhật tin tuyển dụng thành công!
+                                        </t>
+                                        <t t-else="">
+                                            Gửi tin tuyển dụng thành công!
+                                        </t>
+                                    </h2>
+
+                                    <!-- Nội dung thông báo -->
+                                    <div class="alert alert-info mb-4">
+                                        <h5 class="alert-heading mb-2">
+                                            <i class="fa fa-info-circle me-2"></i>
+                                            Tin của bạn đang chờ duyệt
+                                        </h5>
+                                        <p class="mb-0">
+                                            <t t-if="action_type == 'edit'">
+                                                Các thay đổi cho "<strong t-esc="job.name"/>" đã được gửi đến Admin.
+                                            </t>
+                                            <t t-else="">
+                                                Bài viết "<strong t-esc="job.name"/>" đã được gửi đến Admin.
+                                            </t>
+                                            Chúng tôi sẽ kiểm duyệt và phê duyệt trong thời gian sớm nhất.
+                                        </p>
+                                    </div>
+
+                                    <!-- Thông tin trạng thái -->
+                                    <div class="bg-light rounded p-3 mb-4 text-start">
+                                        <h6 class="text-muted mb-3">
+                                            <i class="fa fa-list-ul me-2"></i>Quy trình kiểm duyệt:
+                                        </h6>
+                                        <ol class="mb-0 small">
+                                            <li class="mb-2">
+                                                <span class="badge bg-warning text-dark me-2">1</span>
+                                                Tin của bạn đang được chờ duyệt
+                                            </li>
+                                            <li class="mb-2">
+                                                <span class="badge bg-secondary me-2">2</span>
+                                                Admin kiểm tra nội dung tin tuyển dụng
+                                            </li>
+                                            <li class="mb-2">
+                                                <span class="badge bg-secondary me-2">3</span>
+                                                Tin được phê duyệt và xuất bản lên website
+                                            </li>
+                                            <li>
+                                                <span class="badge bg-secondary me-2">4</span>
+                                                Bạn có thể theo dõi trạng thái trong mục "Tin tuyển dụng"
+                                            </li>
+                                        </ol>
+                                    </div>
+
+                                    <!-- Nút hành động -->
+                                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+                                        <a href="/my/recruitment?tab=jobs"
+                                           class="btn btn-lg"
+                                           style="background-color: #1E3769; color: #fff;">
+                                            <i class="fa fa-list me-2"></i>Xem danh sách tin
+                                        </a>
+                                        <a href="/my/recruitment/job/create"
+                                           class="btn btn-lg btn-outline-secondary">
+                                            <i class="fa fa-plus me-2"></i>Đăng tin khác
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
     </data>
 </odoo>

@@ -32,6 +32,7 @@
         'views/recruitment_portal_views.xml',
         'views/portal_applicant_detail.xml',
         'views/job_detail_views.xml',
+        'views/moderation_views.xml',
 
     ],
     'assets': {
