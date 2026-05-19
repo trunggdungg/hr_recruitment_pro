@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Thêm field Mức Lương vào form Job Edit -->
+    <!-- Thêm field Mức Lương, Địa Điểm, Trình độ vào form Job Edit -->
     <record id="view_hr_job_form_inherit_salary_level" model="ir.ui.view">
         <field name="name">hr.job.form.inherit.salary.level</field>
         <field name="model">hr.job</field>
@@ -10,16 +10,8 @@
             <xpath expr="//group[@name='contract']" position="inside">
                 <field name="salary_level_id" string="Mức Lương"/>
                 <field name="location_id" string="Địa Điểm"/>
+                <field name="degree_id" string="Trình độ yêu cầu"/>
             </xpath>
-        </field>
-    </record>
-
-    <!-- Thêm tab Yêu cầu & Quyền lợi -->
-    <record id="view_hr_job_form_inherit_summary" model="ir.ui.view">
-        <field name="name">hr.job.form.inherit.summary</field>
-        <field name="model">hr.job</field>
-        <field name="inherit_id" ref="hr.view_hr_job_form"/>
-        <field name="arch" type="xml">
 
             <xpath expr="//notebook" position="inside">
                 <page string="Yêu cầu &amp; Quyền lợi" name="requirements_benefits">

@@ -96,10 +96,18 @@
                                     <div class="col-6 col-md-4">
                                         <div class="card border-0 bg-light h-100">
                                             <div class="card-body text-center">
-                                                <i class="fa fa-money text-success fa-2x mb-2"></i>
-                                                <h6 class="mb-1">Mức lương</h6>
+                                                <i class="fa fa-graduation-cap text-primary fa-2x mb-2"></i>
+
+                                                <h6 class="mb-1">Trình độ yêu cầu</h6>
+
                                                 <p class="small text-muted mb-0">
-                                                    <t t-esc="salary_display or 'Thỏa thuận'"/>
+                                                    <t t-if="job.degree_id">
+                                                        <t t-esc="job.degree_id.name"/>
+                                                    </t>
+
+                                                    <t t-else="">
+                                                        Không yêu cầu
+                                                    </t>
                                                 </p>
                                             </div>
                                         </div>

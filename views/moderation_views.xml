@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action: Tất cả bài cần duyệt -->
+    <record id="action_job_moderation_all" model="ir.actions.act_window">
+        <field name="name">Duyệt tin tuyển dụng</field>
+        <field name="res_model">hr.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('recruiter_id', '!=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Chưa có tin tuyển dụng nào cần duyệt
+            </p>
+            <p>
+                Tin tuyển dụng từ portal user sẽ xuất hiện ở đây để bạn kiểm duyệt.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: Bài chờ duyệt -->
+    <record id="action_job_moderation_pending" model="ir.actions.act_window">
+        <field name="name">Bài chờ duyệt</field>
+        <field name="res_model">hr.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('moderation_state', '=', 'pending')]</field>
+        <field name="context">{'create': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Không có tin nào đang chờ duyệt
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: Bài bị từ chối -->
+    <record id="action_job_moderation_rejected" model="ir.actions.act_window">
+        <field name="name">Bài bị từ chối</field>
+        <field name="res_model">hr.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('moderation_state', '=', 'rejected')]</field>
+        <field name="context">{'create': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Không có tin nào bị từ chối
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: Bài đã duyệt -->
+    <record id="action_job_moderation_approved" model="ir.actions.act_window">
+        <field name="name">Bài đã duyệt</field>
+        <field name="res_model">hr.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('moderation_state', '=', 'approved')]</field>
+        <field name="context">{'create': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Chưa có tin nào được duyệt
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: Wizard duyệt/từ chối -->
+    <record id="action_moderation_wizard" model="ir.actions.act_window">
+        <field name="name">Kiểm duyệt tin tuyển dụng</field>
+        <field name="res_model">moderation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ========== 2. MENUS (SAU KHI CO ACTION) ========== -->
+
+    <!-- Menu chính: Duyệt tin tuyển dụng -->
+    <menuitem
+        id="menu_job_moderation"
+        name="Duyệt tin tuyển dụng"
+        parent="hr_recruitment.menu_hr_recruitment_root"
+        action="action_job_moderation_all"
+        sequence="3"
+        groups="hr_recruitment.group_hr_recruitment_user"/>
+
+    <!-- Submenu: Bài chờ duyệt -->
+    <menuitem
+        id="menu_job_moderation_pending"
+        name="Bài chờ duyệt"
+        parent="menu_job_moderation"
+        action="action_job_moderation_pending"
+        sequence="1"
+        groups="hr_recruitment.group_hr_recruitment_user"/>
+
+    <!-- Submenu: Bài bị từ chối -->
+    <menuitem
+        id="menu_job_moderation_rejected"
+        name="Bài bị từ chối"
+        parent="menu_job_moderation"
+        action="action_job_moderation_rejected"
+        sequence="2"
+        groups="hr_recruitment.group_hr_recruitment_user"/>
+
+    <!-- Submenu: Bài đã duyệt -->
+    <menuitem
+        id="menu_job_moderation_approved"
+        name="Bài đã duyệt"
+        parent="menu_job_moderation"
+        action="action_job_moderation_approved"
+        sequence="3"
+        groups="hr_recruitment.group_hr_recruitment_user"/>
+
+    <!-- ========== 3. VIEWS ========== -->
+
+    <!-- Tree view cho moderation -->
+    <record id="view_hr_job_moderation_tree" model="ir.ui.view">
+        <field name="name">hr.job.moderation.tree</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="moderation_state" widget="badge"
+                       decoration-muted="moderation_state == 'draft'"
+                       decoration-info="moderation_state == 'pending'"
+                       decoration-success="moderation_state == 'approved'"
+                       decoration-danger="moderation_state == 'rejected'"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="recruiter_id" string="Nhà tuyển dụng"/>
+                <field name="moderation_date" string="Ngày duyệt" optional="show"/>
+                <field name="moderator_id" string="Người duyệt" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="view_hr_job_moderation_search" model="ir.ui.view">
+        <field name="name">hr.job.moderation.search</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_job_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Chờ duyệt" name="filter_pending"
+                        domain="[('moderation_state', '=', 'pending')]"/>
+                <filter string="Đã duyệt" name="filter_approved"
+                        domain="[('moderation_state', '=', 'approved')]"/>
+                <filter string="Từ chối" name="filter_rejected"
+                        domain="[('moderation_state', '=', 'rejected')]"/>
+                <separator/>
+                <filter string="Tin Portal" name="filter_portal"
+                        domain="[('recruiter_id', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Form view với buttons duyệt -->
+    <record id="view_hr_job_moderation_form" model="ir.ui.view">
+        <field name="name">hr.job.moderation.form</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="arch" type="xml">
+            <!-- Thêm buttons vào header -->
+            <header position="inside">
+                <button name="%(action_moderation_wizard)d" string="Duyệt đăng"
+                        type="action" class="btn-success"
+                        icon="fa-check"
+                        context="{'default_action': 'approve'}"
+                        invisible="recruiter_id == False or moderation_state in ['approved']"/>
+                <button name="%(action_moderation_wizard)d" string="Từ chối"
+                        type="action" class="btn-danger"
+                        icon="fa-times"
+                        context="{'default_action': 'reject'}"
+                        invisible="recruiter_id == False or moderation_state in ['rejected']"/>
+            </header>
+
+            <!-- Ẩn expected_degree gốc từ hr_recruitment (trùng với degree_id) -->
+            <xpath expr="//field[@name='expected_degree']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Thêm group thông tin kiểm duyệt vào đầu sheet -->
+            <xpath expr="//sheet/notebook" position="before">
+                <group string="Thông tin kiểm duyệt" name="moderation_info"
+                       invisible="recruiter_id == False">
+                    <field name="recruiter_id" readonly="1"/>
+                    <field name="moderation_state" readonly="1" widget="badge"/>
+                    <field name="moderation_date" readonly="1"/>
+                    <field name="moderator_id" readonly="1"/>
+                    <field name="moderation_note"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Wizard form -->
+    <record id="view_moderation_wizard_form" model="ir.ui.view">
+        <field name="name">moderation.wizard.form</field>
+        <field name="model">moderation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Kiểm duyệt tin tuyển dụng">
+                <group>
+                    <group>
+                        <field name="action" readonly="1"/>
+                        <field name="note" placeholder="Nhập ghi chú cho nhà tuyển dụng..."/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_apply" string="Xác nhận" type="object" class="btn-primary"/>
+                    <button string="Hủy" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

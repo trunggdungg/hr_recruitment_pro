@@ -64,8 +64,8 @@
                                                     <div class="d-flex align-items-start gap-2">
                                                         <div class="wrap_o_job_logo">
                                                             <div class="o_job_logo">
-                                                                <img t-if="job.x_studio_hinh_anh"
-                                                                     t-att-src="'/web/image/hr.job/%s/x_studio_hinh_anh' % job.id"
+                                                                <img t-if="job.hr_job_photo"
+                                                                     t-att-src="'/web/image/hr.job/%s/hr_job_photo' % job.id"
                                                                      alt="Job Image"/>
 
                                                                 <img t-elif="job.company_id and job.company_id.logo"
