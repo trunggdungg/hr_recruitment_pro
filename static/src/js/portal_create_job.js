@@ -285,7 +285,7 @@
                     }
                 });
             }
-        }, 100);
+        }, 300);
 
         // Search input
         searchInp.addEventListener('focus', function () {
@@ -354,7 +354,7 @@
         skillSelected.add(id);
 
         // Hidden input
-        var form = document.getElementById('job_form');
+        var form = document.getElementById('job_form') || document.getElementById('job_edit_form');
         if (form) {
             var inp = document.createElement('input');
             inp.type = 'hidden';
