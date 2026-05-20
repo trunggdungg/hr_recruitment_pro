@@ -225,14 +225,20 @@ class HrJobInherit(models.Model):
         return True
 
     def write(self, vals):
-        """Khi portal user sửa bài đã duyệt -> tự động reset về pending"""
+        """Khi portal user sửa bài đã duyệt -> tự động reset về pending.
+        Chỉ áp dụng cho portal user (user.share=True), không áp dụng cho internal user.
+        """
         user = self.env.user
-        # Chỉ xử lý batch write cho 1 record để đơn giản
         if len(self) == 1:
             job = self
-            if job.is_portal_job and job.moderation_state == 'approved':
-                if user.partner_id.is_recruiter and job.recruiter_id.id == user.partner_id.id:
-                    vals = {**vals, 'moderation_state': 'pending', 'website_published': False}
+            # user.share = True: portal user
+            # user.share = False: internal user (admin, staff)
+            if (user.share  # chỉ portal user mới bị reset
+                    and job.is_portal_job
+                    and job.moderation_state == 'approved'
+                    and user.partner_id.is_recruiter
+                    and job.recruiter_id.id == user.partner_id.id):
+                vals = {**vals, 'moderation_state': 'pending', 'website_published': False}
         return super().write(vals)
 
     def open_website_url(self):
