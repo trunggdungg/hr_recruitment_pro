@@ -407,134 +407,199 @@
         <div class="card border-0 shadow-sm mt-3">
             <div class="card-body">
 
-                <h4 class="mb-3" style="color:#1E3769;">
-                    <i class="fa fa-info-circle me-2"></i>
-                    Hướng dẫn quản lý tuyển dụng
-                </h4>
-
+                <!-- Quy trình đăng tin -->
                 <div class="mb-4">
-                    <h5 class="fw-bold">
-                        <i class="fa fa-plus-circle text-primary me-2"></i>
-                        Đăng tin tuyển dụng
-                    </h5>
+                    <h4 class="mb-3" style="color:#1E3769;">
+                        <i class="fa fa-sitemap me-2"></i>
+                        Quy trình đăng tin tuyển dụng
+                    </h4>
 
-                    <p>
-                        Nhấn nút
-                        <span class="btn btn-sm btn-primary disabled">
-                            <i class="fa fa-plus me-1"></i>Đăng tin mới
-                        </span>
-                        để tạo tin tuyển dụng mới.
-                    </p>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background:#fff3cd; border:1px solid #ffc107;">
+                                <div class="badge bg-warning text-dark mb-2">Bước 1</div>
+                                <h6>Tạo tin mới</h6>
+                                <small class="text-muted">Điền đầy đủ thông tin tuyển dụng</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background:#e8daef; border:1px solid #9b59b6;">
+                                <div class="badge bg-secondary mb-2">Bước 2</div>
+                                <h6>Chờ duyệt</h6>
+                                <small class="text-muted">Tin của bạn đang chờ Admin kiểm tra</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background:#d4edda; border:1px solid #28a745;">
+                                <div class="badge bg-success mb-2">Bước 3</div>
+                                <h6>Được duyệt</h6>
+                                <small class="text-muted">Tin tự động hiển thị trên website</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background:#cce5ff; border:1px solid #0d6efd;">
+                                <div class="badge bg-primary mb-2">Bước 4</div>
+                                <h6>Quản lý tin</h6>
+                                <small class="text-muted">Đăng bài, cập nhật hoặc lưu trữ</small>
+                            </div>
+                        </div>
+                    </div>
 
-                    <ul>
-                        <li>Điền đầy đủ thông tin tuyển dụng</li>
-                        <li>Mô tả rõ yêu cầu công việc</li>
-                        <li>Kiểm tra kỹ nội dung trước khi đăng</li>
-                    </ul>
+                    <div class="alert alert-info mb-0">
+                        <i class="fa fa-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Khi bạn chỉnh sửa tin đã được duyệt, tin sẽ tự động quay về trạng thái "Chờ duyệt" và ẩn khỏi website cho đến khi Admin duyệt lại.
+                    </div>
                 </div>
 
                 <hr/>
 
+                <!-- Trạng thái tin tuyển dụng -->
                 <div class="mb-4">
-                    <h5 class="fw-bold">
-                        <i class="fa fa-cogs text-primary me-2"></i>
+                    <h4 class="mb-3" style="color:#1E3769;">
+                        <i class="fa fa-flag me-2"></i>
+                        Trạng thái tin tuyển dụng
+                    </h4>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:20%;">Trạng thái</th>
+                                    <th style="width:25%;">Badge</th>
+                                    <th>Mô tả</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Nháp</strong></td>
+                                    <td><span class="badge bg-secondary"><i class="fa fa-edit me-1"></i>Nháp</span></td>
+                                    <td>Tin đang được soạn thảo, chưa gửi duyệt</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Chờ duyệt</strong></td>
+                                    <td><span class="badge bg-warning text-dark"><i class="fa fa-clock-o me-1"></i>Chờ duyệt</span></td>
+                                    <td>Tin đã gửi, đang chờ Admin kiểm tra và phê duyệt</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Đã duyệt</strong></td>
+                                    <td><span class="badge bg-success"><i class="fa fa-check me-1"></i>Đã duyệt</span></td>
+                                    <td>Tin đã được duyệt, tự động hiển thị trên website</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Từ chối</strong></td>
+                                    <td><span class="badge bg-danger"><i class="fa fa-times me-1"></i>Bị từ chối</span></td>
+                                    <td>Tin không được duyệt. Vui lòng đọc lý do và chỉnh sửa lại.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <!-- Các nút chức năng -->
+                <div class="mb-4">
+                    <h4 class="mb-3" style="color:#1E3769;">
+                        <i class="fa fa-cogs me-2"></i>
                         Các nút chức năng
-                    </h5>
+                    </h4>
 
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="btn btn-sm" style="background:#1E3769; color:#fff; min-width:100px;">
+                                    <i class="fa fa-eye me-1"></i>Xem
+                                </span>
+                                <span>Xem chi tiết nội dung tin tuyển dụng</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="btn btn-sm btn-outline-secondary" style="min-width:100px;">
+                                    <i class="fa fa-pencil me-1"></i>Sửa
+                                </span>
+                                <span>Chỉnh sửa thông tin tin tuyển dụng</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="btn btn-sm btn-success" style="min-width:100px;">
+                                    <i class="fa fa-globe me-1"></i>Đăng bài
+                                </span>
+                                <span>Hiển thị tin trên website (chỉ khi đã duyệt)</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="btn btn-sm btn-outline-success" style="min-width:100px;">
+                                    <i class="fa fa-eye-slash me-1"></i>Huỷ xuất bản
+                                </span>
+                                <span>Ẩn tin khỏi website (vẫn giữ trạng thái duyệt)</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="btn btn-sm btn-outline-danger" style="min-width:100px;">
+                                    <i class="fa fa-archive me-1"></i>Lưu trữ
+                                </span>
+                                <span>Đưa tin vào lưu trữ (cần huỷ xuất bản trước)</span>
+                            </div>
 
-                        <span class="btn btn-sm btn-primary disabled">
-                            <i class="fa fa-eye me-1"></i>Xem
-                        </span>
-
-                        <span class="btn btn-sm btn-warning disabled">
-                            <i class="fa fa-pencil me-1"></i>Sửa
-                        </span>
-
-                        <span class="btn btn-sm btn-success disabled">
-                            <i class="fa fa-globe me-1"></i>Đăng bài
-                        </span>
-
-                        <span class="btn btn-sm btn-secondary disabled">
-                            <i class="fa fa-times-circle me-1"></i>Gỡ bài
-                        </span>
-
-                        <span class="btn btn-sm btn-danger disabled">
-                            <i class="fa fa-archive me-1"></i>Lưu trữ
-                        </span>
-
+                        </div>
                     </div>
-
-                    <ul>
-                        <li>
-                            <strong>Xem:</strong>
-                            Xem chi tiết nội dung tin tuyển dụng.
-                        </li>
-
-                        <li>
-                            <strong>Sửa:</strong>
-                            Chỉnh sửa thông tin tin tuyển dụng.
-                        </li>
-
-                        <li>
-                            <strong>Đăng bài:</strong>
-                            Hiển thị tin tuyển dụng lên website để ứng viên ứng tuyển.
-                        </li>
-
-                        <li>
-                            <strong>Huỷ xuất bản:</strong>
-                            Ẩn tin tuyển dụng khỏi website.
-                        </li>
-
-                        <li>
-                            <strong>Lưu trữ:</strong>
-                            Đưa tin tuyển dụng vào trạng thái lưu trữ.
-                        </li>
-                    </ul>
                 </div>
 
                 <hr/>
 
+                <!-- Lưu ý quan trọng -->
                 <div class="mb-4">
-                    <h5 class="fw-bold text-danger">
+                    <h4 class="mb-3 text-danger">
                         <i class="fa fa-exclamation-triangle me-2"></i>
-                        Lưu ý khi lưu trữ tin tuyển dụng
-                    </h5>
+                        Lưu ý quan trọng
+                    </h4>
 
-                    <div class="alert alert-warning mb-0">
-
-                        <p>
-                            Khi lưu trữ, tin tuyển dụng sẽ không còn hiển thị trên website
-                            và ứng viên sẽ không thể ứng tuyển nữa.
-                        </p>
-
-                        <p>
-                            Nếu bạn muốn mở lại tin tuyển dụng sau này, vui lòng liên hệ
-                            với bộ phận hỗ trợ của chúng tôi để được trợ giúp.
-                        </p>
-
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="alert alert-warning mb-0 h-100">
+                                <h6 class="alert-heading"><i class="fa fa-edit me-1"></i> Chỉnh sửa tin đã duyệt</h6>
+                                <p class="mb-0">Khi bạn chỉnh sửa tin đã được Admin duyệt, tin sẽ tự động quay về trạng thái "Chờ duyệt" và bị ẩn khỏi website. Admin sẽ kiểm tra lại trước khi duyệt tiếp.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0 h-100">
+                                <h6 class="alert-heading"><i class="fa fa-clock-o me-1"></i> Thời gian xử lý</h6>
+                                <p class="mb-0">Tin tuyển dụng mới sẽ được xử lý trong thời gian sớm nhất. Nếu bị từ chối, vui lòng đọc kỹ lý do và tạo tin mới hoặc chỉnh sửa.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <hr/>
 
+                <!-- Quản lý ứng viên -->
                 <div>
-                    <h5 class="fw-bold">
-                        <i class="fa fa-users text-primary me-2"></i>
+                    <h4 class="mb-3" style="color:#1E3769;">
+                        <i class="fa fa-users me-2"></i>
                         Quản lý ứng viên
-                    </h5>
+                    </h4>
 
-                    <p>
-                        Chuyển sang tab
-                        <span class="badge bg-success">Ứng viên</span>
-                        để xem danh sách ứng viên đã ứng tuyển.
-                    </p>
+                    <p>Chuyển sang tab <span class="badge bg-success">Ứng viên</span> để xem danh sách ứng viên đã ứng tuyển vào tin của bạn.</p>
 
-                    <ul>
-                        <li>Xem CV ứng viên</li>
-                        <li>Theo dõi trạng thái ứng tuyển</li>
-                        <li>Liên hệ ứng viên phù hợp</li>
-                    </ul>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="fa fa-list-ul me-1"></i> Thao tác với ứng viên</h6>
+                            <ul class="mb-0">
+                                <li>Xem chi tiết CV ứng viên</li>
+                                <li>Xem trạ thái ứng tuyển</li>
+                                <li>Liên hệ ứng viên phù hợp</li>
+                                <li>Hẹn lịch phỏng vấn</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="fa fa-flag me-1"></i> Trạng thái ứng viên</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-warning text-dark">Chờ xét duyệt</span>
+                                <span class="badge bg-primary">Đạt</span>
+                                <span class="badge bg-success">Phỏng vấn</span>
+                                <span class="badge bg-danger">Không đạt</span>
+                                <span class="badge bg-info">Hợp đồng ký</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
