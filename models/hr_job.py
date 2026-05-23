@@ -90,29 +90,13 @@ class HrJobInherit(models.Model):
         help='Ngày kết thúc nhận hồ sơ ứng tuyển',
         tracking=True,
     )
-    probation_salary_ratio = fields.Integer(
-        string='Lương thử việc (%)',
-        default=85,
-        help='Tỷ lệ lương thử việc so với lương chính thức'
-    )
 
-    # Thêm field source_type để hiển thị text đẹp hơn
-    source_type = fields.Selection([
-        ('portal', 'Nhà tuyển dụng'),
-        ('admin', 'Nội bộ'),
-    ], string='Nguồn đăng', compute='_compute_source_type', store=False)
-
-    def _compute_source_type(self):
-        for job in self:
-            job.source_type = 'portal' if job.recruiter_id else 'admin'
-
-    # ========== MODERATION FIELDS ==========
+    # ========== Kiem duyet ==========
     moderation_state = fields.Selection([
-        ('draft', 'Nháp'),
         ('pending', 'Chờ duyệt'),
         ('approved', 'Đã duyệt'),
         ('rejected', 'Từ chối'),
-    ], string='Trạng thái duyệt', default='draft', tracking=True, copy=False)
+    ], string='Trạng thái duyệt', default='pending', tracking=True, copy=False)
 
     moderation_note = fields.Text(
         string='Ghi chú duyệt',
@@ -169,41 +153,22 @@ class HrJobInherit(models.Model):
             subtype_xmlid='mail.mt_note',
         )
 
-    def action_moderation_reset_draft(self):
-        """Yêu cầu sửa lại - reset về draft"""
-        self.ensure_one()
-        self.write({
-            'moderation_state': 'draft',
-            'moderation_note': False,
-            'website_published': False,
-        })
-        self.message_post(
-            body='Admin yêu cầu chỉnh sửa lại bài tuyển dụng.',
-            message_type='notification',
-            subtype_xmlid='mail.mt_note',
-        )
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Tự động gán recruiter_id nếu user là recruiter"""
         user = self.env.user
         for vals in vals_list:
-            if not vals.get('recruiter_id'):
-                if user.partner_id.is_recruiter:
-                    vals['recruiter_id'] = user.partner_id.id
-                    # Portal user tạo bài -> chờ duyệt
-                    vals.setdefault('moderation_state', 'pending')
+            # Nếu chưa có moderation_state, tự động xác định
+            if 'moderation_state' not in vals:
+                if vals.get('is_portal_job') or vals.get('recruiter_id'):
+                    vals['moderation_state'] = 'pending'
                 else:
-                    # Admin tạo bài -> tự động duyệt
-                    vals.setdefault('moderation_state', 'approved')
-            
-            # Nếu là bài từ portal (is_portal_job=True) -> cần duyệt
-            # Nếu là bài từ admin (is_portal_job=False/unset) -> tự động duyệt (trừ khi đã set khác)
-            if vals.get('is_portal_job'):
-                vals.setdefault('moderation_state', 'pending')
-            else:
-                vals.setdefault('moderation_state', 'approved')
+                    vals['moderation_state'] = 'approved'
+            # Gán recruiter_id nếu user là recruiter
+            if not vals.get('recruiter_id') and user.partner_id.is_recruiter:
+                vals['recruiter_id'] = user.partner_id.id
         return super().create(vals_list)
+
 
     def _cron_auto_unpublish_expired_jobs(self):
         """Cron: Tự động gỡ bài đăng khi hết hạn"""
@@ -224,18 +189,14 @@ class HrJobInherit(models.Model):
             )
         return True
 
+
     def write(self, vals):
-        """Khi portal user sửa bài đã duyệt -> tự động reset về pending.
-        Chỉ áp dụng cho portal user (user.share=True), không áp dụng cho internal user.
-        """
         user = self.env.user
         if len(self) == 1:
             job = self
-            # user.share = True: portal user
-            # user.share = False: internal user (admin, staff)
-            if (user.share  # chỉ portal user mới bị reset
+            if (user.share
                     and job.is_portal_job
-                    and job.moderation_state == 'approved'
+                    and job.moderation_state in ['approved', 'rejected']  # ← thêm rejected
                     and user.partner_id.is_recruiter
                     and job.recruiter_id.id == user.partner_id.id):
                 vals = {**vals, 'moderation_state': 'pending', 'website_published': False}

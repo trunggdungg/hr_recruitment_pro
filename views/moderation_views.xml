@@ -114,7 +114,6 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="before">
                 <field name="moderation_state" widget="badge"
-                       decoration-muted="moderation_state == 'draft'"
                        decoration-info="moderation_state == 'pending'"
                        decoration-success="moderation_state == 'approved'"
                        decoration-danger="moderation_state == 'rejected'"/>
@@ -156,16 +155,16 @@
         <field name="arch" type="xml">
             <!-- Thêm buttons vào header -->
             <header position="inside">
-                <button name="%(action_moderation_wizard)d" string="Duyệt đăng"
-                        type="action" class="btn-success"
-                        icon="fa-check"
-                        context="{'default_action': 'approve'}"
-                        invisible="recruiter_id == False or moderation_state in ['approved']"/>
-                <button name="%(action_moderation_wizard)d" string="Từ chối"
-                        type="action" class="btn-danger"
-                        icon="fa-times"
-                        context="{'default_action': 'reject'}"
-                        invisible="recruiter_id == False or moderation_state in ['rejected']"/>
+                  <button name="%(action_moderation_wizard)d" string="Duyệt đăng"
+            type="action" class="btn-success"
+            icon="fa-check"
+            context="{'default_action': 'approve'}"
+            invisible="recruiter_id == False or moderation_state == 'approved'"/>
+                    <button name="%(action_moderation_wizard)d" string="Từ chối"
+            type="action" class="btn-danger"
+            icon="fa-times"
+            context="{'default_action': 'reject'}"
+            invisible="recruiter_id == False or moderation_state == 'rejected'"/>
             </header>
 
             <!-- Ẩn expected_degree gốc từ hr_recruitment (trùng với degree_id) -->

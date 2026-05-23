@@ -13,7 +13,6 @@ class ModerationWizard(models.TransientModel):
     action = fields.Selection([
         ('approve', 'Duyệt đăng'),
         ('reject', 'Từ chối'),
-        ('request_edit', 'Yêu cầu sửa lại'),
     ], string='Hành động', required=True)
 
     note = fields.Text(string='Ghi chú', placeholder='Nhập ghi chú cho nhà tuyển dụng...')
@@ -45,16 +44,5 @@ class ModerationWizard(models.TransientModel):
             for job in jobs:
                 job.action_moderation_reject(note=self.note)
             _logger.info('Rejected %d jobs by user %s', len(jobs), self.env.user.name)
-
-        elif self.action == 'request_edit':
-            for job in jobs:
-                job.action_moderation_reset_draft()
-                if self.note:
-                    job.message_post(
-                        body=f'Admin yêu cầu sửa lại: {self.note}',
-                        message_type='notification',
-                        subtype_xmlid='mail.mt_note',
-                    )
-            _logger.info('Requested edit for %d jobs by user %s', len(jobs), self.env.user.name)
 
         return {'type': 'ir.actions.act_window_close'}

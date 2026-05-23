@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
+<!--2 menu ở config-->
     <!-- Thêm menu Mức Lương vào Configuration > Job Positions -->
     <menuitem
         id="menu_hr_recruitment_salary_level"

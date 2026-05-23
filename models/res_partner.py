@@ -13,28 +13,7 @@ class ResPartner(models.Model):
         help='Khi bật, partner này sẽ có quyền đăng tin tuyển dụng trên portal'
     )
 
-    # Thông tin công ty tuyển dụng
-    # recruiter_company_name = fields.Char(
-    #     string='Tên công ty',
-    #     help='Tên công ty hiển thị trên tin tuyển dụng'
-    # )
-    # recruiter_company_logo = fields.Binary(
-    #     string='Logo công ty',
-    #     attachment=True
-    # )
-    # recruiter_tax_id = fields.Char(
-    #     string='Mã số thuế'
-    # )
-    # recruiter_company_size = fields.Selection([
-    #     ('1_10', '1-10 người'),
-    #     ('10_50', '10-50 người'),
-    #     ('50_200', '50-200 người'),
-    #     ('200_500', '200-500 người'),
-    #     ('500+', '500+ người'),
-    # ], string='Quy mô công ty')
-    # recruiter_industry = fields.Char(string='Ngành nghề')
     recruiter_verified = fields.Boolean(string='Đã xác minh', default=False)
-    # recruiter_description = fields.Text(string='Giới thiệu công ty')
 
     # Liên kết đến jobs đã đăng
     recruiter_job_ids = fields.One2many(
