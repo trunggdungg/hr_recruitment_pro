@@ -168,9 +168,9 @@
             </header>
 
             <!-- Ẩn expected_degree gốc từ hr_recruitment (trùng với degree_id) -->
-            <xpath expr="//field[@name='expected_degree']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
+<!--            <xpath expr="//field[@name='expected_degree']" position="attributes">-->
+<!--                <attribute name="invisible">1</attribute>-->
+<!--            </xpath>-->
 
             <!-- Thêm group thông tin kiểm duyệt vào đầu sheet -->
             <xpath expr="//sheet/notebook" position="before">

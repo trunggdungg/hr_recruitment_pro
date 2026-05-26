@@ -7,15 +7,15 @@
         <field name="arch" type="xml">
 
             <!-- Thêm vào nhóm bên phải, sau field "job_id" -->
-            <field name="job_id" position="after">
-                <field name="recruiter_feedback"
-                       widget="badge"
-                       decoration-warning="recruiter_feedback == 'pending'"
-                       decoration-info="recruiter_feedback == 'interview'"
-                       decoration-success="recruiter_feedback == 'approved' or recruiter_feedback == 'contracted'"
-                       decoration-danger="recruiter_feedback == 'rejected'"
-                       readonly="1"/>
-            </field>
+<!--            <field name="job_id" position="after">-->
+<!--                <field name="recruiter_feedback"-->
+<!--                       widget="badge"-->
+<!--                       decoration-warning="recruiter_feedback == 'pending'"-->
+<!--                       decoration-info="recruiter_feedback == 'interview'"-->
+<!--                       decoration-success="recruiter_feedback == 'approved' or recruiter_feedback == 'contracted'"-->
+<!--                       decoration-danger="recruiter_feedback == 'rejected'"-->
+<!--                       readonly="1"/>-->
+<!--            </field>-->
 
             <!-- Thêm nhà tuyển dụng là ai (lấy từ job_id.recruiter_id) -->
             <field name="job_id" position="after">

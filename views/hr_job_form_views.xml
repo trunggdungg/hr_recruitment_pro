@@ -25,6 +25,11 @@
                     </group>
                 </page>
             </xpath>
+
+           <xpath expr="//field[@name='expected_degree']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
         </field>
     </record>
 
