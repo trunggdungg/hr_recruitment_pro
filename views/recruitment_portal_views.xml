@@ -26,7 +26,7 @@
                         <a href="/my/recruitment"
                            class="o_portal_docs_entry d-flex align-items-center text-decoration-none text-reset"
                            style="background-color: #f8f9fa; border-radius: 6.4px; padding: 16px; gap: 16px; height: 104px;">
-                            <img src="/hr_recruitment_pro/static/src/img/recruiment3-removebg-preview.png"
+                            <img src="/hr_recruitment_pro/static/src/img/recruitment3.png"
                                  style="width: 59px; height: 59px; object-fit: contain; flex-shrink: 0;"/>
                             <div>
                                 <p class="mb-0 fs-5">Quản lý tuyển dụng</p>
@@ -1086,7 +1086,7 @@
                     .skill-dropdown .sd-no-result:hover { background: transparent; }
                 </style>
 
-                <script src="/hr_recruitment_pro/static/src/js/portal_create_job.js"></script>
+                <script src="/eaut_hr_recruitment/static/src/js/portal_create_job.js"></script>
             </t>
         </template>
 
@@ -1362,7 +1362,7 @@
                 benefits: <t t-raw="json_benefits"/>
             };
     </script>
-    <script src="/hr_recruitment_pro/static/src/js/portal_create_job.js"></script>
+    <script src="/eaut_hr_recruitment/static/src/js/portal_create_job.js"></script>
 
         <!-- ===== MODAL TẠO NHANH (dùng chung cho edit) ===== -->
         <div class="modal fade" id="quickCreateModal" tabindex="-1" aria-hidden="true">

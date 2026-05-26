@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+
 import logging
 from odoo import models, fields, api
 from datetime import date
 
 _logger = logging.getLogger(__name__)
+
+
 class HrJobInherit(models.Model):
     _inherit = 'hr.job'
 
@@ -91,6 +94,8 @@ class HrJobInherit(models.Model):
         tracking=True,
     )
 
+
+
     # ========== Kiem duyet ==========
     moderation_state = fields.Selection([
         ('pending', 'Chờ duyệt'),
@@ -153,7 +158,6 @@ class HrJobInherit(models.Model):
             subtype_xmlid='mail.mt_note',
         )
 
-
     @api.model_create_multi
     def create(self, vals_list):
         user = self.env.user
@@ -168,7 +172,6 @@ class HrJobInherit(models.Model):
             if not vals.get('recruiter_id') and user.partner_id.is_recruiter:
                 vals['recruiter_id'] = user.partner_id.id
         return super().create(vals_list)
-
 
     def _cron_auto_unpublish_expired_jobs(self):
         """Cron: Tự động gỡ bài đăng khi hết hạn"""
@@ -189,8 +192,10 @@ class HrJobInherit(models.Model):
             )
         return True
 
-
     def write(self, vals):
+        """Khi portal user sửa bài đã duyệt -> tự động reset về pending.
+        Chỉ áp dụng cho portal user (user.share=True), không áp dụng cho internal user.
+        """
         user = self.env.user
         if len(self) == 1:
             job = self
