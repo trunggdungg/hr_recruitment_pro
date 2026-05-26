@@ -194,16 +194,29 @@ class HrJobInherit(models.Model):
 
     def write(self, vals):
         """Khi portal user sửa bài đã duyệt -> tự động reset về pending.
-        Chỉ áp dụng cho portal user (user.share=True), không áp dụng cho internal user.
+        Chỉ áp dụng cho portal user (user.share=True) khi SỬA NỘI DUNG bài viết,
+        KHÔNG áp dụng khi chỉ toggle website_published (huỷ/đăng xuất bản).
         """
         user = self.env.user
         if len(self) == 1:
             job = self
+            # Các trường content cần kiểm tra - chỉ reset khi sửa nội dung
+            content_fields = {
+                'name', 'description', 'requirements', 'benefits',
+                'salary_level_id', 'location_id', 'contract_type_id', 'degree_id',
+                'experience_level', 'remote_policy', 'working_hours',
+                'gender_require', 'age_require', 'trial_period', 'application_deadline',
+                'no_of_recruitment',
+            }
+            # Kiểm tra xem có đang sửa nội dung không (không phải chỉ toggle published)
+            is_content_edit = bool(content_fields & set(vals.keys()))
+
             if (user.share
                     and job.is_portal_job
-                    and job.moderation_state in ['approved', 'rejected']  # ← thêm rejected
+                    and job.moderation_state in ['approved', 'rejected']
                     and user.partner_id.is_recruiter
-                    and job.recruiter_id.id == user.partner_id.id):
+                    and job.recruiter_id.id == user.partner_id.id
+                    and is_content_edit):
                 vals = {**vals, 'moderation_state': 'pending', 'website_published': False}
         return super().write(vals)
 
