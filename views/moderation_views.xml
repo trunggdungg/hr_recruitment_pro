@@ -21,8 +21,8 @@
         <field name="name">Bài chờ duyệt</field>
         <field name="res_model">hr.job</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('moderation_state', '=', 'pending')]</field>
-        <field name="context">{'create': 0}</field>
+       <field name="domain">[('moderation_state', '=', 'pending'), ('recruiter_id', '!=', False)]</field>
+    <field name="context">{'create': 0}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Không có tin nào đang chờ duyệt
@@ -35,8 +35,8 @@
         <field name="name">Bài bị từ chối</field>
         <field name="res_model">hr.job</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('moderation_state', '=', 'rejected')]</field>
-        <field name="context">{'create': 0}</field>
+        <field name="domain">[('moderation_state', '=', 'rejected'), ('recruiter_id', '!=', False)]</field>
+    <field name="context">{'create': 0}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Không có tin nào bị từ chối
@@ -49,8 +49,8 @@
         <field name="name">Bài đã duyệt</field>
         <field name="res_model">hr.job</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('moderation_state', '=', 'approved')]</field>
-        <field name="context">{'create': 0}</field>
+        <field name="domain">[('moderation_state', '=', 'approved'), ('recruiter_id', '!=', False)]</field>
+    <field name="context">{'create': 0}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Chưa có tin nào được duyệt
@@ -168,9 +168,9 @@
             </header>
 
             <!-- Ẩn expected_degree gốc từ hr_recruitment (trùng với degree_id) -->
-            <xpath expr="//field[@name='expected_degree']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
+<!--            <xpath expr="//field[@name='expected_degree']" position="attributes">-->
+<!--                <attribute name="invisible">1</attribute>-->
+<!--            </xpath>-->
 
             <!-- Thêm group thông tin kiểm duyệt vào đầu sheet -->
             <xpath expr="//sheet/notebook" position="before">

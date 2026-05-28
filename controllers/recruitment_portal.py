@@ -92,6 +92,25 @@ class RecruitmentPortal(CustomerPortal):
         }
         return request.render("hr_recruitment_pro.portal_my_recruitment", values)
 
+    # @http.route('/my/recruitment/job/<int:job_id>/toggle_publish',
+    #             type='json', auth='user', website=True)
+    # def toggle_job_publish(self, job_id, **kwargs):
+    #     job = request.env['hr.job'].sudo().browse(job_id)
+    #     user = request.env.user
+    #
+    #     if not job.exists() or job.user_id.id != user.id:
+    #         return {'error': 'Không có quyền thực hiện'}
+    #
+    #     try:
+    #         new_state = not job.website_published
+    #         job.write({'website_published': new_state})
+    #         return {
+    #             'success': True,
+    #             'published': new_state,
+    #             'message': 'Đã đăng tin tuyển dụng' if new_state else 'Đã huỷ xuất bản tin tuyển dụng'
+    #         }
+    #     except Exception as e:
+    #         return {'error': str(e)}
     @http.route('/my/recruitment/job/<int:job_id>/toggle_publish',
                 type='json', auth='user', website=True)
     def toggle_job_publish(self, job_id, **kwargs):
@@ -100,6 +119,13 @@ class RecruitmentPortal(CustomerPortal):
 
         if not job.exists() or job.user_id.id != user.id:
             return {'error': 'Không có quyền thực hiện'}
+
+        # FIX: chỉ cho phép publish khi đã được duyệt
+        if not job.website_published and job.moderation_state != 'approved':
+            return {
+                'success': False,
+                'error': 'Tin tuyển dụng chưa được Admin duyệt, không thể đăng bài'
+            }
 
         try:
             new_state = not job.website_published
@@ -236,8 +262,8 @@ class RecruitmentPortal(CustomerPortal):
                 'trial_period': int(trial_period) if trial_period else 2,
                 'application_deadline': application_deadline,
                 # QUAN TRỌNG: Set trạng thái chờ duyệt
-                'moderation_state': 'pending',
-                'website_published': False,  # KHÔNG tự động publish
+                'moderation_state': 'approved' if not request.env.user.share else 'pending',
+                'website_published': True if not request.env.user.share else False,
             }
 
             if salary_level_id:
@@ -356,6 +382,7 @@ class RecruitmentPortal(CustomerPortal):
         """Xử lý submit form chỉnh sửa - BÀI SẼ QUAY VỀ TRẠNG THÁI CHỜ DUYỆT"""
         partner = request.env.user.partner_id
         user = request.env.user
+        is_portal_user = request.env.user.share
 
         if not partner.is_recruiter:
             return request.redirect('/')
@@ -386,7 +413,8 @@ class RecruitmentPortal(CustomerPortal):
                 'trial_period': int(post.get('trial_period', 2) or 2),
                 'application_deadline': application_deadline,
                 # QUAN TRỌNG: Quay về trạng thái chờ duyệt khi sửa
-                'moderation_state': 'pending',
+                #'moderation_state': 'pending',
+                'moderation_state': 'pending' if is_portal_user else job.moderation_state,
             }
 
             salary_level_id = post.get('salary_level_id')

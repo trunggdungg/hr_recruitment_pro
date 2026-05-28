@@ -13,7 +13,7 @@
                 <field name="degree_id" string="Trình độ yêu cầu"/>
             </xpath>
 
-            <xpath expr="//notebook" position="inside">
+           <xpath expr="//page[@name='job_description_page']" position="after">
                 <page string="Yêu cầu &amp; Quyền lợi" name="requirements_benefits">
                     <group>
                         <field name="requirements" string="Yêu cầu ứng viên"
@@ -25,7 +25,28 @@
                     </group>
                 </page>
             </xpath>
+<!--            Ẩn expected-->
+           <xpath expr="//field[@name='expected_degree']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+<!--            hiển thị img-->
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="hr_job_photo" widget="image" class="oe_avatar" options="{'size': [128, 128]}" style="float: left;"/>
+            </xpath>
+
+            <!-- Readonly field website_published khi chưa approved -->
+            <xpath expr="//field[@name='website_published']" position="attributes">
+                <attribute name="readonly">moderation_state != 'approved'</attribute>
+                <attribute name="widget">boolean_toggle</attribute>
+                <attribute name="help">Nếu tin chưa được duyệt không thể bật xuất bản.</attribute>
+            </xpath>
+
+<!--            Thay đổi tên tab tổng kết-->
+            <xpath expr="//page[@name='job_description_page']" position="attributes">
+                <attribute name="string">Mô tả công việc</attribute>
+            </xpath>
         </field>
     </record>
+
 
 </odoo>

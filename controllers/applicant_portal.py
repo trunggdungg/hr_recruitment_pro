@@ -23,33 +23,33 @@ class ApplicantPortal(CustomerPortal):
             ('job_id.user_id', '=', user.id)
         ]
 
-    @route('/my/recruitment/applicant/<int:applicant_id>', 
-           type='http', auth='user', website=True)
-    def portal_applicant_detail(self, applicant_id, **kwargs):
-        """Trang chi tiết ứng viên"""
-        applicant = request.env['hr.applicant'].sudo().browse(applicant_id)
-        
-        if not applicant.exists():
-            return request.redirect('/my/recruitment?tab=applicants')
-        
-        # Kiểm tra quyền: chỉ recruiter sở hữu job mới được xem
-        user = request.env.user
-        if applicant.job_id.user_id.id != user.id:
-            _logger.warning('User %s attempted to access applicant %s without permission', 
-                          user.id, applicant_id)
-            return request.redirect('/my/recruitment?tab=applicants')
-        
-        # Lấy danh sách stages để hiển thị (tất cả stages)
-        stages = request.env['hr.recruitment.stage'].sudo().search([], order='sequence asc')
-        
-        values = {
-            'applicant': applicant,
-            'stages': stages,
-            'page_name': 'applicant_detail',
-            'redirect_url': '/my/recruitment?tab=applicants',
-        }
-        
-        return request.render('hr_recruitment_pro.portal_applicant_detail', values)
+    # @route('/my/recruitment/applicant/<int:applicant_id>',
+    #        type='http', auth='user', website=True)
+    # def portal_applicant_detail(self, applicant_id, **kwargs):
+    #     """Trang chi tiết ứng viên"""
+    #     applicant = request.env['hr.applicant'].sudo().browse(applicant_id)
+    #
+    #     if not applicant.exists():
+    #         return request.redirect('/my/recruitment?tab=applicants')
+    #
+    #     # Kiểm tra quyền: chỉ recruiter sở hữu job mới được xem
+    #     user = request.env.user
+    #     if applicant.job_id.user_id.id != user.id:
+    #         _logger.warning('User %s attempted to access applicant %s without permission',
+    #                       user.id, applicant_id)
+    #         return request.redirect('/my/recruitment?tab=applicants')
+    #
+    #     # Lấy danh sách stages để hiển thị (tất cả stages)
+    #     stages = request.env['hr.recruitment.stage'].sudo().search([], order='sequence asc')
+    #
+    #     values = {
+    #         'applicant': applicant,
+    #         'stages': stages,
+    #         'page_name': 'applicant_detail',
+    #         'redirect_url': '/my/recruitment?tab=applicants',
+    #     }
+    #
+    #     return request.render('hr_recruitment_pro.portal_applicant_detail', values)
 
     @route('/my/recruitment/applicant/<int:applicant_id>/action',
            type='json', auth='user', website=True)

@@ -40,7 +40,7 @@ class HrRecruitmentLocation(models.Model):
 
     _sql_constraints = [
         ('name_unique', 'unique(name)', 'Tên địa điểm đã tồn tại!'),
-        ('city_name_unique', 'unique(city)', 'Thành phố đã tồn tại!'),
+        # ('city_name_unique', 'unique(city)', 'Thành phố đã tồn tại!'),
     ]
 
     def name_get(self):

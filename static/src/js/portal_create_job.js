@@ -50,7 +50,7 @@
                     + '<div class="mb-3">'
                     + '<label class="form-label">Thành phố <span class="text-danger">*</span></label>'
                     + '<input type="text" id="qc_city" class="form-control" placeholder="VD: Hà Nội">'
-                    + '<div class="form-text text-warning">Mỗi thành phố chỉ được tạo một lần</div>'
+                    // + '<div class="form-text text-warning">Mỗi thành phố chỉ được tạo một lần</div>'
                     + '</div>';
             },
             getData: function () {

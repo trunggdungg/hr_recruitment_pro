@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from odoo.exceptions import UserError
 from odoo import models, fields, api
 from datetime import date
 
@@ -162,15 +163,15 @@ class HrJobInherit(models.Model):
     def create(self, vals_list):
         user = self.env.user
         for vals in vals_list:
-            # Nếu chưa có moderation_state, tự động xác định
             if 'moderation_state' not in vals:
-                if vals.get('is_portal_job') or vals.get('recruiter_id'):
-                    vals['moderation_state'] = 'pending'
-                else:
-                    vals['moderation_state'] = 'approved'
-            # Gán recruiter_id nếu user là recruiter
-            if not vals.get('recruiter_id') and user.partner_id.is_recruiter:
+                is_portal_job = vals.get('is_portal_job') or vals.get('recruiter_id')
+                # Chỉ portal job mới cần duyệt
+                vals['moderation_state'] = 'pending' if is_portal_job else 'approved'
+
+            # Chỉ gán recruiter_id nếu là portal user thật (user.share=True)
+            if not vals.get('recruiter_id') and user.share and user.partner_id.is_recruiter:
                 vals['recruiter_id'] = user.partner_id.id
+
         return super().create(vals_list)
 
     def _cron_auto_unpublish_expired_jobs(self):
@@ -193,14 +194,22 @@ class HrJobInherit(models.Model):
         return True
 
     def write(self, vals):
-        """Khi portal user sửa bài đã duyệt -> tự động reset về pending.
-        Chỉ áp dụng cho portal user (user.share=True) khi SỬA NỘI DUNG bài viết,
-        KHÔNG áp dụng khi chỉ toggle website_published (huỷ/đăng xuất bản).
-        """
+        # Chỉ chặn publish khi là portal job chưa duyệt
+        if vals.get('website_published') is True:
+            user = self.env.user
+            if user.share:  # Chỉ chặn portal user, admin thì bỏ qua
+                for job in self:
+                    if job.recruiter_id and job.moderation_state != 'approved':
+                        raise UserError(
+                            f'Tin tuyển dụng "{job.name}" chưa được Admin duyệt. '
+                            f'Không thể xuất bản.'
+                        )
+
+            # Job nội bộ admin → không chặn, cho publish tự do
+
         user = self.env.user
         if len(self) == 1:
             job = self
-            # Các trường content cần kiểm tra - chỉ reset khi sửa nội dung
             content_fields = {
                 'name', 'description', 'requirements', 'benefits',
                 'salary_level_id', 'location_id', 'contract_type_id', 'degree_id',
@@ -208,7 +217,6 @@ class HrJobInherit(models.Model):
                 'gender_require', 'age_require', 'trial_period', 'application_deadline',
                 'no_of_recruitment',
             }
-            # Kiểm tra xem có đang sửa nội dung không (không phải chỉ toggle published)
             is_content_edit = bool(content_fields & set(vals.keys()))
 
             if (user.share
@@ -218,6 +226,7 @@ class HrJobInherit(models.Model):
                     and job.recruiter_id.id == user.partner_id.id
                     and is_content_edit):
                 vals = {**vals, 'moderation_state': 'pending', 'website_published': False}
+
         return super().write(vals)
 
     def open_website_url(self):
@@ -229,3 +238,27 @@ class HrJobInherit(models.Model):
             'url': url,
             'target': 'new',  # mở tab mới, đổi thành 'self' nếu muốn cùng tab
         }
+
+    # Thêm vào class HrJobInherit trong models/hr_job.py
+
+    def copy(self, default=None):
+        default = default or {}
+        if self.is_portal_job or self.recruiter_id:
+            # Portal job → reset về pending, cần duyệt lại
+            default.update({
+                'moderation_state': 'pending',
+                'website_published': False,
+                'moderation_date': False,
+                'moderator_id': False,
+                'moderation_note': False,
+            })
+        else:
+            # Job nội bộ → approved luôn, chỉ unpublish để admin tự quyết
+            default.update({
+                'moderation_state': 'approved',
+                'website_published': False,
+                'moderation_date': False,
+                'moderator_id': False,
+                'moderation_note': False,
+            })
+        return super().copy(default)
