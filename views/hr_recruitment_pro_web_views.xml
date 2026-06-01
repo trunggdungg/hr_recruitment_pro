@@ -68,9 +68,9 @@
                                                                      t-att-src="'/web/image/hr.job/%s/hr_job_photo' % job.id"
                                                                      alt="Job Image"/>
 
-                                                                <img t-elif="job.company_id and job.company_id.logo"
-                                                                     t-att-src="'/web/image/res.company/%s/logo' % job.company_id.id"
-                                                                     alt="Logo"/>
+<!--                                                                <img t-elif="job.company_id and job.company_id.logo"-->
+<!--                                                                     t-att-src="'/web/image/res.company/%s/logo' % job.company_id.id"-->
+<!--                                                                     alt="Logo"/>-->
 
                                                                 <t t-else="">
                                                                     <t t-out="(job.name or 'JO')[:2].upper()"/>

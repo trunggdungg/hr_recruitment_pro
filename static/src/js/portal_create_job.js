@@ -50,7 +50,6 @@
                     + '<div class="mb-3">'
                     + '<label class="form-label">Thành phố <span class="text-danger">*</span></label>'
                     + '<input type="text" id="qc_city" class="form-control" placeholder="VD: Hà Nội">'
-                    // + '<div class="form-text text-warning">Mỗi thành phố chỉ được tạo một lần</div>'
                     + '</div>';
             },
             getData: function () {
@@ -105,6 +104,8 @@
     // ─── Init ─────────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
         initSkillField();
+     initEditors();
+     // initPhotoPreview();
     });
 
     // Dùng event delegation trên document để không bị ảnh hưởng bởi thời điểm render
@@ -197,7 +198,6 @@
             if (first) first.focus();
         }, 300);
 
-        // Callback theo loại: sau khi lưu thành công
         // Load skill types khi mở modal skill
         if (type === 'skill') {
             loadSkillTypes();
@@ -250,7 +250,6 @@
     function addOptionAndSelect(selectId, id, name) {
         var sel = document.getElementById(selectId);
         if (!sel) return;
-        // Kiểm tra trùng
         if (sel.querySelector('option[value="' + id + '"]')) {
             sel.value = id;
             return;
@@ -263,20 +262,18 @@
     // ═════════════════════════════════════════════════════════════════════════
     //  SKILL MANY2MANY TAG FIELD
     // ═════════════════════════════════════════════════════════════════════════
-    var skillSelected = new Set();   // Set<string> của id đã chọn
-    var skillAllOpts = [];          // [{id, label, el}] cache options
+    var skillSelected = new Set();
+    var skillAllOpts = [];
 
     function initSkillField() {
         var dropdown = document.getElementById('skill_dropdown');
         var searchInp = document.getElementById('skill_search_input');
         if (!dropdown || !searchInp) return;
 
-        // Cache
         skillAllOpts = Array.from(dropdown.querySelectorAll('li')).map(function (li) {
             return {id: String(li.dataset.id), label: li.dataset.label, el: li};
         });
 
-        // Pre-load selected skills (for edit page) - defer slightly to ensure inline script ran
         setTimeout(function() {
             if (window._preselectedSkills && Array.isArray(window._preselectedSkills)) {
                 window._preselectedSkills.forEach(function(skill) {
@@ -287,7 +284,6 @@
             }
         }, 300);
 
-        // Search input
         searchInp.addEventListener('focus', function () {
             filterSkillDropdown(this.value);
             dropdown.classList.remove('d-none');
@@ -298,7 +294,6 @@
             dropdown.classList.remove('d-none');
         });
 
-        // Click chọn từ dropdown
         dropdown.addEventListener('mousedown', function (e) {
             var li = e.target.closest('li');
             if (!li || li.classList.contains('sd-no-result')) return;
@@ -309,7 +304,6 @@
             dropdown.classList.add('d-none');
         });
 
-        // Đóng dropdown khi click ngoài
         document.addEventListener('click', function (e) {
             var skillField = document.getElementById('skill_field');
             if (skillField && !skillField.contains(e.target)) {
@@ -347,13 +341,11 @@
         }
     }
 
-    // Thêm tag vào UI + sinh hidden input
     function addSkillTag(id, label) {
         id = String(id);
         if (skillSelected.has(id)) return;
         skillSelected.add(id);
 
-        // Hidden input
         var form = document.getElementById('job_form') || document.getElementById('job_edit_form');
         if (form) {
             var inp = document.createElement('input');
@@ -364,7 +356,6 @@
             form.appendChild(inp);
         }
 
-        // Tag chip
         var tagsWrap = document.getElementById('skill_tags_wrap');
         if (tagsWrap) {
             var tag = document.createElement('span');
@@ -378,7 +369,6 @@
             tagsWrap.appendChild(tag);
         }
 
-        // Ẩn khỏi dropdown
         skillAllOpts.forEach(function (o) {
             if (o.id === id) o.el.style.display = 'none';
         });
@@ -394,7 +384,6 @@
         var tag = document.querySelector('#skill_tags_wrap .m2m-tag[data-id="' + id + '"]');
         if (tag) tag.remove();
 
-        // Hiện lại trong dropdown nếu khớp filter hiện tại
         skillAllOpts.forEach(function (o) {
             if (o.id === id) {
                 var q = document.getElementById('skill_search_input').value;
@@ -403,7 +392,6 @@
         });
     }
 
-    // Thêm option mới vào cache + DOM dropdown (dùng sau khi tạo mới)
     function addSkillOption(id, name) {
         id = String(id);
         var dropdown = document.getElementById('skill_dropdown');
@@ -411,7 +399,7 @@
         li.dataset.id = id;
         li.dataset.label = name;
         li.textContent = name;
-        li.style.display = 'none'; // vừa được chọn thành tag rồi, ẩn đi
+        li.style.display = 'none';
         dropdown.appendChild(li);
         skillAllOpts.push({id: id, label: name, el: li});
     }
@@ -423,9 +411,7 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({jsonrpc: '2.0', method: 'call', params: {}}),
         })
-            .then(function (r) {
-                return r.json();
-            })
+            .then(function (r) { return r.json(); })
             .then(function (data) {
                 var sel = document.getElementById('qc_skill_type');
                 if (!sel) return;
@@ -435,8 +421,7 @@
                         return '<option value="' + t.id + '">' + t.name + '</option>';
                     }).join('');
             })
-            .catch(function () {
-            });
+            .catch(function () {});
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -448,9 +433,7 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({jsonrpc: '2.0', method: 'call', params: params}),
         })
-            .then(function (r) {
-                return r.json();
-            })
+            .then(function (r) { return r.json(); })
             .then(function (data) {
                 var result = data.result;
                 if (result && result.success) {
@@ -484,7 +467,10 @@
     }
 
 })();
-// style text
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  RICH TEXT EDITOR
+// ═════════════════════════════════════════════════════════════════════════════
 function createSimpleEditor(textarea) {
     if (textarea.dataset.editorInitialized) return;
     textarea.dataset.editorInitialized = 'true';
@@ -534,12 +520,8 @@ function createSimpleEditor(textarea) {
             document.execCommand(def.cmd, false, def.value || null);
             ed.focus();
         });
-        b.addEventListener('mouseover', function () {
-            b.style.background = '#e9ecef';
-        });
-        b.addEventListener('mouseout', function () {
-            b.style.background = '#fff';
-        });
+        b.addEventListener('mouseover', function () { b.style.background = '#e9ecef'; });
+        b.addEventListener('mouseout', function () { b.style.background = '#fff'; });
         toolbar.appendChild(b);
     });
 
@@ -603,6 +585,56 @@ function createSimpleEditor(textarea) {
     }
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+//  PHOTO PREVIEW
+// ═════════════════════════════════════════════════════════════════════════════
+document.addEventListener('change', function (e) {
+    // Kiểm tra xem phần tử thay đổi có phải là ô chọn ảnh hay không
+    if (e.target && e.target.id === 'job_photo_input') {
+        var fileInput = e.target;
+        var file = fileInput.files && fileInput.files[0];
+        var previewImg  = document.getElementById('photo_preview_img');
+        var previewIcon = document.getElementById('photo_preview_icon');
+        var previewWrap = document.getElementById('photo_preview_wrap');
+
+        if (!previewImg) return;
+
+        if (file) {
+            // Kiểm tra dung lượng ảnh (> 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 2MB.');
+                fileInput.value = '';
+
+                // Reset preview về mặc định
+                previewImg.src = '';
+                previewImg.style.display = 'none';
+                if (previewIcon) previewIcon.style.display = '';
+                if (previewWrap) previewWrap.style.border = '2px dashed #ced4da';
+                return;
+            }
+
+            // Đọc file và hiển thị Preview
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                previewImg.src = event.target.result;
+                previewImg.style.display = 'block';
+                if (previewIcon) previewIcon.style.display = 'none';
+                if (previewWrap) previewWrap.style.border = '2px solid #1E3769';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Trường hợp người dùng hủy chọn file
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+            if (previewIcon) previewIcon.style.display = '';
+            if (previewWrap) previewWrap.style.border = '2px dashed #ced4da';
+        }
+    }
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  EDITORS + PHOTO — khởi chạy sau khi toàn bộ trang load xong
+// ═════════════════════════════════════════════════════════════════════════════
 function initEditors() {
     if (window._editPrefill) {
         var p = window._editPrefill;
@@ -610,10 +642,13 @@ function initEditors() {
         var hReq  = document.getElementById('hidden_requirements');
         var hBen  = document.getElementById('hidden_benefits');
         if (hDesc && p.description) hDesc.value = p.description;
-        if (hReq  && p.requirements) hReq.value = p.requirements;
-        if (hBen  && p.benefits)     hBen.value = p.benefits;
+        if (hReq  && p.requirements) hReq.value  = p.requirements;
+        if (hBen  && p.benefits)     hBen.value   = p.benefits;
     }
-
     document.querySelectorAll('textarea.sre-target').forEach(createSimpleEditor);
 }
-window.addEventListener('load', initEditors);
+
+window.addEventListener('load', function () {
+    // initPhotoPreview();
+    initEditors();
+});

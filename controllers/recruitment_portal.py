@@ -244,6 +244,7 @@ class RecruitmentPortal(CustomerPortal):
             return request.redirect('/my/recruitment/job/create?error=name_required')
 
         try:
+            import base64
             job_vals = {
                 'name': name,
                 'is_portal_job': True,
@@ -265,6 +266,11 @@ class RecruitmentPortal(CustomerPortal):
                 'moderation_state': 'approved' if not request.env.user.share else 'pending',
                 'website_published': True if not request.env.user.share else False,
             }
+
+            photo_file = request.httprequest.files.get('hr_job_photo')
+            if photo_file and photo_file.filename:
+                photo_data = base64.b64encode(photo_file.read())
+                job_vals['hr_job_photo'] = photo_data
 
             if salary_level_id:
                 job_vals['salary_level_id'] = int(salary_level_id)
@@ -396,6 +402,7 @@ class RecruitmentPortal(CustomerPortal):
             return request.redirect(f'/my/recruitment/job/{job_id}/edit?error=name_required')
 
         try:
+            import base64
             skill_ids = request.httprequest.form.getlist('skill_ids')
             application_deadline = post.get('application_deadline') or False
 
@@ -437,7 +444,13 @@ class RecruitmentPortal(CustomerPortal):
             
             # Write các trường khác trước
             job.write(write_vals)
-            
+
+            # Xử lý ảnh đại diện
+            photo_file = request.httprequest.files.get('hr_job_photo')
+            if photo_file and photo_file.filename:
+                photo_data = base64.b64encode(photo_file.read())
+                job.write({'hr_job_photo': photo_data})
+
             # Tạo job skill records mới sau khi job đã được write
             if selected_skill_ids:
                 SkillType = request.env['hr.skill.type'].sudo()
