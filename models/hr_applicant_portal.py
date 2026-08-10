@@ -41,7 +41,10 @@ class HrApplicantPortal(models.Model):
         readonly=True,
         store=False,
     )
-
+    short_intro_candidate = fields.Text(
+        string='Giới thiệu ngắn',
+        help='Giới thiệu ngắn từ ứng viên khi ứng tuyển'
+    )
 
     def portal_approve(self):
         """Duyệt ứng viên - chuyển sang phỏng vấn"""

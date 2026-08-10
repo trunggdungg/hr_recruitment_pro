@@ -9,11 +9,21 @@
         <field name="arch" type="xml">
             <xpath expr="//group[@name='contract']" position="inside">
                 <field name="salary_level_id" string="Mức Lương"/>
-                <field name="location_id" string="Địa Điểm"/>
+                <field name="state_id" string="Tỉnh/Thành phố"/>
+                 <field name="ward_id"
+                       string="Phường/Xã"
+                       domain="[('state_id', '=', state_id)]"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="job_address" string="Địa chỉ chi tiết"/>
                 <field name="degree_id" string="Trình độ yêu cầu"/>
             </xpath>
+        <!--ghim tin-->
 
-           <xpath expr="//page[@name='job_description_page']" position="after">
+        <xpath expr="//field[@name='website_published']" position="after">
+            <!-- Các field hiện tại giữ nguyên, thêm dòng dưới -->
+            <field name="is_pinned" string="Ghim tin" widget="boolean_toggle"/>
+        </xpath>
+            <xpath expr="//page[@name='job_description_page']" position="after">
                 <page string="Yêu cầu &amp; Quyền lợi" name="requirements_benefits">
                     <group>
                         <field name="requirements" string="Yêu cầu ứng viên"
@@ -25,7 +35,8 @@
                     </group>
                 </page>
             </xpath>
-<!--            Ẩn expected-->
+
+            <!--            Ẩn expected-->
            <xpath expr="//field[@name='expected_degree']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
@@ -47,6 +58,5 @@
             </xpath>
         </field>
     </record>
-
 
 </odoo>

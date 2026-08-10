@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="apply_inherit" inherit_id="website_hr_recruitment.apply">
+        <!-- Thay đổi name từ short_introduction thành short_intro_candidate -->
+        <xpath expr="//textarea[@name='short_introduction']" position="attributes">
+            <attribute name="name">short_intro_candidate</attribute>
+        </xpath>
+    </template>
+</odoo>

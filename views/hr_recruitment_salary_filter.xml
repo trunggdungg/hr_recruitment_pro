@@ -17,8 +17,8 @@
             <t t-if="request.params.get('office_id')">
                 <t t-set="salary_domain" t-value="salary_domain + [('address_id', '=', int(request.params.get('office_id')))]"/>
             </t>
-            <t t-if="request.params.get('location_id')">
-                <t t-set="salary_domain" t-value="salary_domain + [('location_id', '=', int(request.params.get('location_id')))]"/>
+                <t t-if="request.params.get('state_id')">
+                <t t-set="salary_domain" t-value="salary_domain + [('state_id', '=', int(request.params.get('state_id')))]"/>
             </t>
 
             <t t-set="salary_levels" t-value="request.env['hr.recruitment.salary.level'].sudo().search([('active', '=', True)], order='sequence')"/>
@@ -52,6 +52,60 @@
                 </div>
             </t>
 
+        </xpath>
+
+
+          <!-- Mobile accordion - -->
+        <xpath expr="//div[hasclass('accordion-flush')]" position="inside">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse"
+                            t-att-data-bs-target="'#salaryDropdown'"
+                            aria-expanded="false">
+                        Mức Lương
+                    </button>
+                </h2>
+                <div id="salaryDropdown" class="accordion-collapse collapse"
+                     t-att-data-bs-parent="'#o_jobs_offcanvas'">
+                    <div class="accordion-body pt-0">
+                        <ul class="list-group list-group-flush">
+                            <t t-if="salary_levels_with_jobs">
+                                <li class="list-group-item px-0 border-0">
+                                    <a t-attf-href="/jobs?salary_level_id=&amp;#{params_no_salary}"
+                                       class="d-flex align-items-center justify-content-between text-reset text-decoration-none">
+                                        <div class="form-check flex-basis-100">
+                                            <input class="form-check-input pe-none" type="radio"
+                                                   name="salary_all"
+                                                   t-att-checked="not current_salary_id"/>
+                                            <label class="form-check-label">Tất cả mức lương</label>
+                                        </div>
+                                        <span class="badge pagination text-bg-primary ms-2">
+                                            <t t-out="sum(job_counts.values())"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                <t t-foreach="salary_levels_with_jobs" t-as="level">
+                                    <li class="list-group-item px-0 border-0">
+                                        <a t-attf-href="/jobs?salary_level_id=#{level.id}&amp;#{params_no_salary}"
+                                           class="d-flex align-items-center justify-content-between text-reset text-decoration-none">
+                                            <div class="form-check flex-basis-100">
+                                                <input class="form-check-input pe-none" type="radio"
+                                                       t-attf-name="salary_#{level.id}"
+                                                       t-att-checked="current_salary_id == level.id"/>
+                                                <label class="form-check-label" t-out="level.name"/>
+                                            </div>
+                                            <span class="badge pagination text-bg-primary ms-2">
+                                                <t t-out="job_counts.get(level.id, 0)"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </t>
+                            </t>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </xpath>
     </template>
 </odoo>

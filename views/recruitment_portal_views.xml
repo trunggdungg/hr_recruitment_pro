@@ -26,7 +26,7 @@
                         <a href="/my/recruitment"
                            class="o_portal_docs_entry d-flex align-items-center text-decoration-none text-reset"
                            style="background-color: #f8f9fa; border-radius: 6.4px; padding: 16px; gap: 16px; height: 104px;">
-                            <img src="/hr_recruitment_pro/static/src/img/recruitment3.png"
+                            <img src="/eaut_hr_recruitment/static/src/img/recruiment3-removebg-preview.png"
                                  style="width: 59px; height: 59px; object-fit: contain; flex-shrink: 0;"/>
                             <div>
                                 <p class="mb-0 fs-5">Quản lý tuyển dụng</p>
@@ -45,14 +45,32 @@
         <t t-set="page" t-value="page if page is not None else 1"/>
         <t t-set="total_jobs" t-value="total_jobs if total_jobs is not None else 0"/>
         <t t-set="search_query" t-value="search_query if search_query is not None else ''"/>
+        <t t-set="applicant_search" t-value="applicant_search if applicant_search is not None else ''"/>
+        <t t-set="applicant_page" t-value="applicant_page if applicant_page is not None else 1"/>
+        <t t-set="applicant_per_page" t-value="applicant_per_page if applicant_per_page is not None else 10"/>
+        <t t-set="applicant_total_pages" t-value="applicant_total_pages if applicant_total_pages is not None else 1"/>
 
                 <div class="eaut_recruitment-container container py-4 px-2">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="mb-0" style="color: #1E3769;">Quản lý tuyển dụng</h3>
-                        <a href="/my/recruitment/job/create" class="btn"
-                           style="background-color: #1E3769; color: #fff;">
-                            <i class="fa fa-plus me-1"/>Đăng tin mới
-                        </a>
+                        <div class="d-flex gap-2">
+
+                            <!-- Nút Excel đổi theo tab đang active -->
+                            <t t-if="active_tab == 'jobs' and jobs_count">
+                                <a href="/my/recruitment/export/jobs" class="btn btn-outline-success">
+                                    <i class="fa fa-file-excel-o me-1"/>Xuất Excel tin tuyển dụng
+                                </a>
+                            </t>
+<!--                            <t t-if="active_tab == 'applicants' and applicants_count">-->
+<!--                                <a href="/my/recruitment/export/applicants" class="btn btn-outline-success">-->
+<!--                                    <i class="fa fa-file-excel-o me-1"/>Xuất Excel ứng viên-->
+<!--                                </a>-->
+<!--                            </t>-->
+                            <a href="/my/recruitment/job/create" class="btn"
+                               style="background-color: #1E3769; color: #fff;">
+                                <i class="fa fa-plus me-1"/>Đăng tin mới
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Tabs -->
@@ -132,8 +150,8 @@
                                         <t t-esc="job.name"/>
                                     </h6>
                                     <div class="d-flex flex-wrap gap-2" style="font-size:13px; color:#6c757d;">
-                                        <t t-if="job.location_id">
-                                            <span><i class="fa fa-map-marker me-1"></i><t t-esc="job.location_id.name"/></span>
+                                         <t t-if="job.state_id">
+                                            <span><i class="fa fa-map-marker me-1"></i><t t-esc="job.state_id.name"/><t t-if="job.ward_id">, <t t-out="job.ward_id.name"/></t></span>
                                         </t>
                                         <t t-if="job.salary_level_id">
                                             <span><i class="fa fa-money me-1"></i><t t-esc="job.salary_level_id.name"/></span>
@@ -187,12 +205,21 @@
                             <hr class="my-2" style="opacity:0.1;"/>
 
                             <!-- Thông báo trạng thái moderation -->
-                            <t t-if="job.moderation_state == 'rejected' and job.moderation_note">
-                                <div class="alert alert-danger py-2 mb-2" style="font-size:13px;">
-                                    <i class="fa fa-exclamation-triangle me-1"></i>
-                                    <strong>Lý do từ chối:</strong> <t t-esc="job.moderation_note"/>
-                                </div>
-                            </t>
+                          <!-- Admin từ chối -->
+<t t-if="job.moderation_state == 'rejected' and job.moderation_reason == 'admin_rejected' and job.moderation_note">
+    <div class="alert alert-danger py-2 mb-2" style="font-size:13px;">
+        <i class="fa fa-exclamation-triangle me-1"></i>
+        <strong>Lý do từ chối:</strong> <t t-esc="job.moderation_note"/>
+    </div>
+</t>
+
+<!-- Hết hạn tự động -->
+<t t-if="job.moderation_state == 'rejected' and job.moderation_reason == 'expired' and job.moderation_note">
+    <div class="alert alert-warning py-2 mb-2" style="font-size:13px;">
+        <i class="fa fa-clock-o me-1"></i>
+        <strong>Hết hạn:</strong> <t t-esc="job.moderation_note"/>
+    </div>
+</t>
 
                             <!-- Actions -->
                             <div class="d-flex flex-wrap gap-1 mt-1">
@@ -327,11 +354,40 @@
                             <a href="/my/recruitment/job/create" class="alert-link">Đăng tin mới</a>
                         </t>
                     </div>
-            </t>
+                </t>
 
         </t>
                     <!-- Tab: Ứng viên -->
                     <t t-if="active_tab == 'applicants'">
+
+                        <!-- Thanh tìm kiếm ứng viên -->
+                        <div class="d-flex gap-2 mb-3">
+                            <form method="get" action="/my/recruitment" class="d-flex gap-2 flex-grow-1">
+                                <input type="hidden" name="tab" value="applicants"/>
+                                <input type="text" name="applicant_search" class="form-control form-control-sm"
+                                       placeholder="Tìm theo tên, email..."
+                                       t-att-value="applicant_search if applicant_search else ''"/>
+                                <button type="submit" class="btn btn-sm"
+                                        style="background:#1E3769; color:#fff; white-space:nowrap;">
+                                    <i class="fa fa-search me-1"></i>Tìm
+                                </button>
+                                <t t-if="applicant_search">
+                                    <a href="/my/recruitment?tab=applicants" class="btn btn-sm btn-outline-secondary"
+                                       style="white-space:nowrap;">
+                                        <i class="fa fa-times me-1"></i>Xoá
+                                    </a>
+                                </t>
+                            </form>
+                        </div>
+
+                        <!-- Kết quả tìm kiếm -->
+                        <t t-if="applicant_search">
+                            <p style="font-size:13px; color:#6c757d;" class="mb-2">
+                                Tìm thấy <strong><t t-esc="applicants_count"/></strong> ứng viên cho
+                                "<strong><t t-esc="applicant_search"/></strong>"
+                            </p>
+                        </t>
+
                         <t t-if="applicants">
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover text-center align-middle eaut_recruitment-table">
@@ -388,10 +444,58 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            <!-- Phân trang ứng viên -->
+                            <t t-if="applicant_total_pages > 1">
+                                <t t-set="applicant_prev_page" t-value="applicant_page - 1"/>
+                                <t t-set="applicant_next_page" t-value="applicant_page + 1"/>
+                                <t t-set="is_first" t-value="applicant_page == 1"/>
+                                <t t-set="is_last" t-value="applicant_page == applicant_total_pages"/>
+
+                                <nav class="mt-4">
+                                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                                        <!-- Prev -->
+                                        <li t-att-class="'page-item disabled' if is_first else 'page-item'">
+                                            <a class="page-link"
+                                               t-attf-href="/my/recruitment?tab=applicants&amp;applicant_page=#{applicant_prev_page}&amp;applicant_search=#{applicant_search if applicant_search else ''}">
+                                                <i class="fa fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+
+                                        <!-- Số trang -->
+                                        <t t-foreach="range(1, applicant_total_pages + 1)" t-as="p">
+                                            <li t-att-class="'page-item active' if p == applicant_page else 'page-item'">
+                                                <a class="page-link"
+                                                   t-attf-href="/my/recruitment?tab=applicants&amp;applicant_page=#{p}&amp;applicant_search=#{applicant_search if applicant_search else ''}">
+                                                    <t t-esc="p"/>
+                                                </a>
+                                            </li>
+                                        </t>
+
+                                        <!-- Next -->
+                                        <li t-att-class="'page-item disabled' if is_last else 'page-item'">
+                                            <a class="page-link"
+                                               t-attf-href="/my/recruitment?tab=applicants&amp;applicant_page=#{applicant_next_page}&amp;applicant_search=#{applicant_search if applicant_search else ''}">
+                                                <i class="fa fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <p class="text-center mt-2 mb-0" style="font-size:12px; color:#6c757d;">
+                                        Trang <t t-esc="applicant_page"/>/<t t-esc="applicant_total_pages"/> —
+                                        <t t-esc="applicants_count"/> ứng viên
+                                    </p>
+                                </nav>
+                            </t>
                         </t>
                         <t t-else="">
                             <div class="alert alert-info">
-                                Chưa có ứng viên nào ứng tuyển vào tin của bạn.
+                                <t t-if="applicant_search">
+                                    Không tìm thấy ứng viên nào khớp với "<strong><t t-esc="applicant_search"/></strong>".
+                                    <a href="/my/recruitment?tab=applicants" class="alert-link">Xem tất cả</a>
+                                </t>
+                                <t t-else="">
+                                    Chưa có ứng viên nào ứng tuyển vào tin của bạn.
+                                </t>
                             </div>
                         </t>
                     </t>
@@ -758,9 +862,9 @@
                             </h4>
                         </div>
                         <div class="card-body">
-                            <form t-attf-action="/my/recruitment/job/submit" method="post" id="job_form"   enctype="multipart/form-data">
+                            <form t-attf-action="/my/recruitment/job/submit" method="post" id="job_form"  enctype="multipart/form-data">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-    <!-- Ảnh đại diện công việc -->
+ <!-- Ảnh đại diện công việc -->
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">Ảnh đại diện công việc</label>
                                     <div class="d-flex align-items-start gap-3">
@@ -779,7 +883,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <!-- Vị trí & Số lượng -->
                                 <div class="row mb-4">
                                     <div class="col-md-8">
@@ -807,38 +910,41 @@
                                 </div>
 
                                 <!-- Địa điểm & Loại công việc -->
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">Địa điểm làm việc</label>
-                                        <div class="input-group">
-                                            <select name="location_id" id="location_select" class="form-select">
-                                                <option value="">-- Chọn địa điểm --</option>
-                                                <t t-foreach="locations" t-as="loc">
-                                                    <option t-att-value="loc.id">
-                                                        <t t-esc="loc.name"/>
-                                                    </option>
-                                                </t>
-                                            </select>
-                                            <button type="button" class="btn btn-outline-primary"
-                                                    onclick="openCreateModal('location')"
-                                                    title="Tạo địa điểm mới">
-                                                <i class="fa fa-plus"></i>
-                                            </button>
-                                        </div>
+                                 <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                                        <select name="state_id" id="state_select" class="form-select" required="1">
+                                            <option value="">-- Chọn tỉnh/thành --</option>
+                                            <t t-foreach="states" t-as="st">
+                                                <option t-att-value="st.id"><t t-esc="st.name"/></option>
+                                            </t>
+                                        </select>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Phường/Xã</label>
+                                        <select name="ward_id" id="ward_select" class="form-select">
+                                            <option value="">-- Chọn phường/xã --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
                                         <label class="form-label fw-bold">Loại công việc</label>
-                                     <select name="contract_type_id" class="form-select">
+                                        <select name="contract_type_id" class="form-select">
                                             <option value="">-- Chọn loại công việc --</option>
                                             <t t-foreach="contract_types" t-as="ct">
-                                                <option t-att-value="ct.id">
-                                                    <t t-esc="ct.name"/>
-                                                </option>
+                                                <option t-att-value="ct.id"><t t-esc="ct.name"/></option>
                                             </t>
-                                     </select>
+                                        </select>
                                     </div>
                                 </div>
 
+                                <!-- Địa chỉ chi tiết -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold">Địa chỉ chi tiết</label>
+                                        <input type="text" name="job_address" class="form-control"
+                                               placeholder="VD: Tầng 10, Tòa nhà ABC, 123 Nguyễn Huệ"/>
+                                    </div>
+                                </div>
                                 <!-- Mức lương & Trình độ -->
                                 <div class="row mb-4">
                                     <div class="col-md-6">
@@ -880,42 +986,42 @@
                                 </div>
 
                                 <!-- Kỹ năng mong đợi (Many2many tags) -->
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">Kỹ năng mong đợi</label>
-                                    <div class="skill-field-wrap border rounded p-2" id="skill_field"
-                                         onclick="document.getElementById('skill_search_input').focus()">
-                                        <!-- Tags đã chọn -->
-                                        <div class="d-flex flex-wrap gap-2 mb-1" id="skill_tags_wrap"></div>
-                                        <!-- Input tìm kiếm -->
-                                        <div class="d-flex gap-2 align-items-center position-relative">
-                                            <input type="text" id="skill_search_input"
-                                                   class="form-control form-control-sm border-0 shadow-none flex-grow-1"
-                                                   placeholder="Tìm kỹ năng..."
-                                                   autocomplete="off"
-                                                   style="min-width:120px;"/>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-primary flex-shrink-0"
-                                                    onclick="event.stopPropagation(); openCreateModal('skill')"
-                                                    title="Tạo kỹ năng mới">
-                                                <i class="fa fa-plus me-1"></i>Tạo mới
-                                            </button>
-                                            <!-- Dropdown gợi ý -->
-                                            <ul class="skill-dropdown list-unstyled d-none"
-                                                id="skill_dropdown">
-                                                <t t-if="skills">
-                                                    <t t-foreach="skills" t-as="skill">
-                                                        <li t-att-data-id="skill.id"
-                                                            t-att-data-label="skill.name">
-                                                            <t t-esc="skill.name"/>
-                                                        </li>
-                                                    </t>
-                                                </t>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="form-text">Gõ để tìm kỹ năng, hoặc bấm "Tạo mới" để thêm kỹ năng chưa có</div>
-                                    <!-- Hidden inputs do JS sinh ra khi submit -->
-                                </div>
+<!--                                <div class="mb-4">-->
+<!--                                    <label class="form-label fw-bold">Kỹ năng yêu cầu</label>-->
+<!--                                    <div class="skill-field-wrap border rounded p-2" id="skill_field"-->
+<!--                                         onclick="document.getElementById('skill_search_input').focus()">-->
+<!--                                        &lt;!&ndash; Tags đã chọn &ndash;&gt;-->
+<!--                                        <div class="d-flex flex-wrap gap-2 mb-1" id="skill_tags_wrap"></div>-->
+<!--                                        &lt;!&ndash; Input tìm kiếm &ndash;&gt;-->
+<!--                                        <div class="d-flex gap-2 align-items-center position-relative">-->
+<!--                                            <input type="text" id="skill_search_input"-->
+<!--                                                   class="form-control form-control-sm border-0 shadow-none flex-grow-1"-->
+<!--                                                   placeholder="Tìm kỹ năng..."-->
+<!--                                                   autocomplete="off"-->
+<!--                                                   style="min-width:120px;"/>-->
+<!--                                            <button type="button"-->
+<!--                                                    class="btn btn-sm btn-outline-primary flex-shrink-0"-->
+<!--                                                    onclick="event.stopPropagation(); openCreateModal('skill')"-->
+<!--                                                    title="Tạo kỹ năng mới">-->
+<!--                                                <i class="fa fa-plus me-1"></i>Tạo mới-->
+<!--                                            </button>-->
+<!--                                            &lt;!&ndash; Dropdown gợi ý &ndash;&gt;-->
+<!--                                            <ul class="skill-dropdown list-unstyled d-none"-->
+<!--                                                id="skill_dropdown">-->
+<!--                                                <t t-if="skills">-->
+<!--                                                    <t t-foreach="skills" t-as="skill">-->
+<!--                                                        <li t-att-data-id="skill.id"-->
+<!--                                                            t-att-data-label="skill.name">-->
+<!--                                                            <t t-esc="skill.name"/>-->
+<!--                                                        </li>-->
+<!--                                                    </t>-->
+<!--                                                </t>-->
+<!--                                            </ul>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="form-text">Gõ để tìm kỹ năng, hoặc bấm "Tạo mới" để thêm kỹ năng chưa có</div>-->
+<!--                                    &lt;!&ndash; Hidden inputs do JS sinh ra khi submit &ndash;&gt;-->
+<!--                                </div>-->
 
                      <!-- Mô tả công việc -->
                     <div class="mb-4">
@@ -948,58 +1054,6 @@
                     </div>
 
                                 <!-- Cấp bậc & Chế độ làm việc -->
-                                <div class="row mb-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Cấp bậc kinh nghiệm</label>
-                                        <select name="experience_level" class="form-select">
-                                            <option value="intern">Thực tập</option>
-                                            <option value="fresher">Mới tốt nghiệp</option>
-                                            <option value="junior">Junior (1-2 năm)</option>
-                                            <option value="mid" selected="selected">Mid-level (3-5 năm)</option>
-                                            <option value="senior">Senior (5+ năm)</option>
-                                            <option value="lead">Lead / Quản lý</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Chế độ làm việc</label>
-                                        <select name="remote_policy" class="form-select">
-                                            <option value="onsite" selected="selected">Tại văn phòng</option>
-                                            <option value="hybrid">Hybrid (Kết hợp)</option>
-                                            <option value="remote">Remote (Từ xa)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Giờ làm việc</label>
-                                        <input type="text" name="working_hours" class="form-control"
-                                               placeholder="VD: Thứ 2 - Thứ 6, 8h00 - 17h00"/>
-                                    </div>
-                                </div>
-
-                                <!-- Giới tính & Độ tuổi -->
-                                <div class="row mb-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Yêu cầu giới tính</label>
-                                        <select name="gender_require" class="form-select">
-                                            <option value="both" selected="selected">Không giới hạn</option>
-                                            <option value="male">Nam</option>
-                                            <option value="female">Nữ</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Yêu cầu độ tuổi</label>
-                                        <input type="text" name="age_require" class="form-control"
-                                               placeholder="VD: 22-35 tuổi"/>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Thời gian thử việc</label>
-                                        <select name="trial_period" class="form-select">
-                                            <option value="1">1 tháng</option>
-                                            <option value="2" selected="selected">2 tháng</option>
-                                            <option value="3">3 tháng</option>
-                                            <option value="6">6 tháng</option>
-                                        </select>
-                                    </div>
-                                </div>
 
                                 <!-- Buttons -->
                                 <div class="d-flex justify-content-between">
@@ -1107,6 +1161,9 @@
 
         <!-- Trang chỉnh sửa tin tuyển dụng -->
 <template id="portal_edit_job" name="Chỉnh sửa tin tuyển dụng">
+    <style>
+        #wrapwrap > main > div.o_portal.container.mt-3 > div > ol { display: none !important; }
+    </style>
     <t t-call="portal.portal_layout">
         <div class="container py-4">
             <div class="mb-4">
@@ -1127,7 +1184,7 @@
                     <form t-attf-action="/my/recruitment/job/#{job.id}/edit/submit"
                           method="post" id="job_edit_form"  enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-  <!-- Ảnh đại diện công việc -->
+ <!-- Ảnh đại diện công việc -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">Ảnh đại diện công việc</label>
                             <div class="d-flex align-items-start gap-3">
@@ -1162,6 +1219,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <!-- Vị trí & Số lượng -->
                         <div class="row mb-4">
                             <div class="col-md-8">
@@ -1188,22 +1246,7 @@
                                        t-att-value="job.application_deadline.strftime('%Y-%m-%d') if job.application_deadline else ''"/>
                                 <div class="form-text">Để trống nếu tuyển liên tục</div>
                             </div>
-                        </div>
 
-                        <!-- Địa điểm & Loại công việc -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Địa điểm làm việc</label>
-                                <select name="location_id" class="form-select">
-                                    <option value="">-- Chọn địa điểm --</option>
-                                    <t t-foreach="locations" t-as="loc">
-                                        <option t-att-value="loc.id"
-                                                t-att-selected="'selected' if loc.id == job.location_id.id else None">
-                                            <t t-esc="loc.name"/>
-                                        </option>
-                                    </t>
-                                </select>
-                            </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Loại công việc</label>
                                 <select name="contract_type_id" class="form-select">
@@ -1218,6 +1261,54 @@
                             </div>
                         </div>
 
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Tỉnh/Thành phố</label>
+                                <select name="state_id" class="form-select">
+                                    <option value="">-- Chọn tỉnh/thành --</option>
+                                    <t t-foreach="states" t-as="st">
+                                        <option t-att-value="st.id"
+                                                t-att-selected="'selected' if st.id == job.state_id.id else None">
+                                            <t t-esc="st.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Phường/Xã</label>
+                                <select name="ward_id" class="form-select">
+                                    <option value="">-- Chọn phường/xã --</option>
+                                    <t t-foreach="wards" t-as="ward">
+                                        <option t-att-value="ward.id"
+                                                t-att-selected="'selected' if ward.id == job.ward_id.id else None">
+                                            <t t-esc="ward.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Loại công việc</label>
+                                <select name="contract_type_id" class="form-select">
+                                    <option value="">-- Chọn loại công việc --</option>
+                                    <t t-foreach="contract_types" t-as="ct">
+                                        <option t-att-value="ct.id"
+                                                t-att-selected="'selected' if ct.id == job.contract_type_id.id else None">
+                                            <t t-esc="ct.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Địa chỉ chi tiết -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Địa chỉ chi tiết</label>
+                                <input type="text" name="job_address" class="form-control"
+                                       t-att-value="job.job_address or ''"
+                                       placeholder="VD: Tầng 10, Tòa nhà ABC, 123 Nguyễn Huệ"/>
+                            </div>
+                        </div>
                         <!-- Mức lương & Trình độ -->
                         <div class="row mb-4">
                             <div class="col-md-6">
@@ -1247,45 +1338,45 @@
                         </div>
 
                         <!-- Kỹ năng -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Kỹ năng mong đợi</label>
-                            <div class="skill-field-wrap border rounded p-2" id="skill_field"
-                                 onclick="document.getElementById('skill_search_input').focus()">
-                                <div class="d-flex flex-wrap gap-2 mb-1" id="skill_tags_wrap"></div>
-                                <div class="d-flex gap-2 align-items-center position-relative">
-                                    <input type="text" id="skill_search_input"
-                                           class="form-control form-control-sm border-0 shadow-none flex-grow-1"
-                                           placeholder="Tìm kỹ năng..."
-                                           autocomplete="off"
-                                           style="min-width:120px;"/>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary flex-shrink-0"
-                                            onclick="event.stopPropagation(); openCreateModal('skill')"
-                                            title="Tạo kỹ năng mới">
-                                        <i class="fa fa-plus me-1"></i>Tạo mới
-                                    </button>
-                                    <ul class="skill-dropdown list-unstyled d-none" id="skill_dropdown">
-                                        <t t-if="skills">
-                                            <t t-foreach="skills" t-as="skill">
-                                                <li t-att-data-id="skill.id"
-                                                    t-att-data-label="skill.name">
-                                                    <t t-esc="skill.name"/>
-                                                </li>
-                                            </t>
-                                        </t>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="form-text">Gõ để tìm kỹ năng, hoặc bấm "Tạo mới" để thêm kỹ năng chưa có</div>
-                            <!-- Pre-fill kỹ năng hiện tại vào JS -->
-                            <script>
-                                window._preselectedSkills = [
-                                    <t t-foreach="job.skill_ids" t-as="sk">
-                                        {id: <t t-esc="sk.id"/>, label: '<t t-esc="sk.name"/>'},
-                                    </t>
-                                ];
-                            </script>
-                        </div>
+<!--                        <div class="mb-4">-->
+<!--                            <label class="form-label fw-bold">Kỹ năng mong đợi</label>-->
+<!--                            <div class="skill-field-wrap border rounded p-2" id="skill_field"-->
+<!--                                 onclick="document.getElementById('skill_search_input').focus()">-->
+<!--                                <div class="d-flex flex-wrap gap-2 mb-1" id="skill_tags_wrap"></div>-->
+<!--                                <div class="d-flex gap-2 align-items-center position-relative">-->
+<!--                                    <input type="text" id="skill_search_input"-->
+<!--                                           class="form-control form-control-sm border-0 shadow-none flex-grow-1"-->
+<!--                                           placeholder="Tìm kỹ năng..."-->
+<!--                                           autocomplete="off"-->
+<!--                                           style="min-width:120px;"/>-->
+<!--                                    <button type="button"-->
+<!--                                            class="btn btn-sm btn-outline-primary flex-shrink-0"-->
+<!--                                            onclick="event.stopPropagation(); openCreateModal('skill')"-->
+<!--                                            title="Tạo kỹ năng mới">-->
+<!--                                        <i class="fa fa-plus me-1"></i>Tạo mới-->
+<!--                                    </button>-->
+<!--                                    <ul class="skill-dropdown list-unstyled d-none" id="skill_dropdown">-->
+<!--                                        <t t-if="skills">-->
+<!--                                            <t t-foreach="skills" t-as="skill">-->
+<!--                                                <li t-att-data-id="skill.id"-->
+<!--                                                    t-att-data-label="skill.name">-->
+<!--                                                    <t t-esc="skill.name"/>-->
+<!--                                                </li>-->
+<!--                                            </t>-->
+<!--                                        </t>-->
+<!--                                    </ul>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="form-text">Gõ để tìm kỹ năng, hoặc bấm "Tạo mới" để thêm kỹ năng chưa có</div>-->
+<!--                            &lt;!&ndash; Pre-fill kỹ năng hiện tại vào JS &ndash;&gt;-->
+<!--                            <script>-->
+<!--                                window._preselectedSkills = [-->
+<!--                                    <t t-foreach="job.skill_ids" t-as="sk">-->
+<!--                                        {id: <t t-esc="sk.id"/>, label: '<t t-esc="sk.name"/>'},-->
+<!--                                    </t>-->
+<!--                                ];-->
+<!--                            </script>-->
+<!--                        </div>-->
 
                         <!-- Mô tả công việc -->
                         <div class="mb-4">
@@ -1315,68 +1406,6 @@
                         </div>
 
                         <!-- Cấp bậc & Chế độ làm việc -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Cấp bậc kinh nghiệm</label>
-                                <select name="experience_level" class="form-select">
-                                    <t t-foreach="[('intern','Thực tập'),('fresher','Mới tốt nghiệp'),('junior','Junior (1-2 năm)'),('mid','Mid-level (3-5 năm)'),('senior','Senior (5+ năm)'),('lead','Lead / Quản lý')]" t-as="opt">
-                                        <option t-att-value="opt[0]"
-                                                t-att-selected="'selected' if opt[0] == job.experience_level else None">
-                                            <t t-esc="opt[1]"/>
-                                        </option>
-                                    </t>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Chế độ làm việc</label>
-                                <select name="remote_policy" class="form-select">
-                                    <t t-foreach="[('onsite','Tại văn phòng'),('hybrid','Hybrid (Kết hợp)'),('remote','Remote (Từ xa)')]" t-as="opt">
-                                        <option t-att-value="opt[0]"
-                                                t-att-selected="'selected' if opt[0] == job.remote_policy else None">
-                                            <t t-esc="opt[1]"/>
-                                        </option>
-                                    </t>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Giờ làm việc</label>
-                                <input type="text" name="working_hours" class="form-control"
-                                       t-att-value="job.working_hours or ''"
-                                       placeholder="VD: Thứ 2 - Thứ 6, 8h00 - 17h00"/>
-                            </div>
-                        </div>
-
-                        <!-- Giới tính & Độ tuổi -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Yêu cầu giới tính</label>
-                                <select name="gender_require" class="form-select">
-                                    <t t-foreach="[('both','Không giới hạn'),('male','Nam'),('female','Nữ')]" t-as="opt">
-                                        <option t-att-value="opt[0]"
-                                                t-att-selected="'selected' if opt[0] == job.gender_require else None">
-                                            <t t-esc="opt[1]"/>
-                                        </option>
-                                    </t>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Yêu cầu độ tuổi</label>
-                                <input type="text" name="age_require" class="form-control"
-                                       t-att-value="job.age_require or ''"
-                                       placeholder="VD: 22-35 tuổi"/>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Thời gian thử việc</label>
-                                <select name="trial_period" class="form-select">
-                                    <t t-foreach="[('1','1 tháng'),('2','2 tháng'),('3','3 tháng'),('6','6 tháng')]" t-as="opt">
-                                        <option t-att-value="opt[0]"
-                                                t-att-selected="'selected' if opt[0] == str(job.trial_period) else None">
-                                            <t t-esc="opt[1]"/>
-                                        </option>
-                                    </t>
-                                </select>
-                            </div>
-                        </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">

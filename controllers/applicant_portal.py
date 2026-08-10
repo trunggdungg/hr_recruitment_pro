@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging, json
+from datetime import datetime
 from markupsafe import Markup
 from odoo.http import request, route
 from odoo.addons.portal.controllers.portal import CustomerPortal
-
+from odoo import fields
 _logger = logging.getLogger(__name__)
 FEEDBACK_TO_KANBAN = {
         'pending': 'normal',
@@ -23,33 +24,6 @@ class ApplicantPortal(CustomerPortal):
             ('job_id.user_id', '=', user.id)
         ]
 
-    # @route('/my/recruitment/applicant/<int:applicant_id>',
-    #        type='http', auth='user', website=True)
-    # def portal_applicant_detail(self, applicant_id, **kwargs):
-    #     """Trang chi tiết ứng viên"""
-    #     applicant = request.env['hr.applicant'].sudo().browse(applicant_id)
-    #
-    #     if not applicant.exists():
-    #         return request.redirect('/my/recruitment?tab=applicants')
-    #
-    #     # Kiểm tra quyền: chỉ recruiter sở hữu job mới được xem
-    #     user = request.env.user
-    #     if applicant.job_id.user_id.id != user.id:
-    #         _logger.warning('User %s attempted to access applicant %s without permission',
-    #                       user.id, applicant_id)
-    #         return request.redirect('/my/recruitment?tab=applicants')
-    #
-    #     # Lấy danh sách stages để hiển thị (tất cả stages)
-    #     stages = request.env['hr.recruitment.stage'].sudo().search([], order='sequence asc')
-    #
-    #     values = {
-    #         'applicant': applicant,
-    #         'stages': stages,
-    #         'page_name': 'applicant_detail',
-    #         'redirect_url': '/my/recruitment?tab=applicants',
-    #     }
-    #
-    #     return request.render('hr_recruitment_pro.portal_applicant_detail', values)
 
     @route('/my/recruitment/applicant/<int:applicant_id>/action',
            type='json', auth='user', website=True)
@@ -139,6 +113,13 @@ class ApplicantPortal(CustomerPortal):
         interview_note = post.get('interview_note', '')
 
         if interview_date:
+            try:
+                interview_dt = datetime.strptime(interview_date, '%Y-%m-%dT%H:%M')
+                if interview_dt < datetime.now():
+                    return request.redirect(f'/my/recruitment/applicant/{applicant_id}?msg=past_date#interview-tab')
+            except ValueError:
+                pass  # Để form validation xử lý format error
+
             applicant.write({
                 'interview_date': interview_date,
                 'interview_note': interview_note,
@@ -176,7 +157,7 @@ class ApplicantPortal(CustomerPortal):
             'msg': kwargs.get('msg', ''),  # <-- thêm dòng này
         }
 
-        return request.render('hr_recruitment_pro.portal_applicant_detail', values)
+        return request.render('eaut_hr_recruitment.portal_applicant_detail', values)
 
     @route('/my/recruitment/applicant/<int:applicant_id>/send_interview_email',
            type='http', auth='user', website=True, csrf=True)
@@ -199,11 +180,14 @@ class ApplicantPortal(CustomerPortal):
         if not interview_date_str:
             return request.redirect(f'/my/recruitment/applicant/{applicant_id}?msg=no_date#interview-tab')
 
-        from datetime import datetime
         try:
             interview_dt = datetime.strptime(interview_date_str, '%Y-%m-%dT%H:%M')
         except ValueError:
             return request.redirect(f'/my/recruitment/applicant/{applicant_id}?msg=invalid_date#interview-tab')
+
+        # Validate: ngày phỏng vấn không được là ngày trong quá khứ
+        if interview_dt < datetime.now():
+            return request.redirect(f'/my/recruitment/applicant/{applicant_id}?msg=past_date#interview-tab')
 
         # Lưu interview_date vào record
         applicant.write({'interview_date': interview_dt})
@@ -286,7 +270,7 @@ class ApplicantPortal(CustomerPortal):
             log = []
 
         log.insert(0, {
-            'sent_at': dt.now().strftime('%H:%M %d/%m/%Y'),
+            'sent_at':  fields.Datetime.context_timestamp(applicant, fields.Datetime.now()).strftime('%H:%M %d/%m/%Y'),
             'sent_by': user.name,
             'interview_date': interview_dt.strftime('%H:%M - %d/%m/%Y'),
             'location': location_display,

@@ -13,6 +13,7 @@ class ModerationWizard(models.TransientModel):
     action = fields.Selection([
         ('approve', 'Duyệt đăng'),
         ('reject', 'Từ chối'),
+        ('request_edit', 'Yêu cầu sửa lại'),
     ], string='Hành động', required=True)
 
     note = fields.Text(string='Ghi chú', placeholder='Nhập ghi chú cho nhà tuyển dụng...')

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import models, fields, api
-
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -37,3 +37,22 @@ class ResPartner(models.Model):
                 jobs = self.env['hr.job']
             partner.recruiter_job_ids = jobs
             partner.recruiter_job_count = len(jobs)
+
+    @api.constrains('email')
+    def _check_unique_email(self):
+        for partner in self:
+            if not partner.email:
+                continue
+
+            email = partner.email.strip().lower()
+
+            duplicate = self.search([
+                ('id', '!=', partner.id),
+                ('email', '=ilike', email),
+            ], limit=1)
+
+            if duplicate:
+                raise ValidationError(_(
+                    "Email '%s' đã tồn tại trên contact '%s'. "
+                    "Vui lòng sử dụng email khác."
+                ) % (partner.email, duplicate.display_name))

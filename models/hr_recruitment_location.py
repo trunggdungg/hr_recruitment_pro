@@ -6,48 +6,38 @@ from odoo import models, fields
 class HrRecruitmentLocation(models.Model):
     _name = 'hr.recruitment.location'
     _description = 'Địa Điểm Tuyển Dụng'
-    _order = 'sequence, id'
+    _order = 'id'
 
-    name = fields.Char(
-        string='Tên địa điểm',
-        required=True,
-        help='VD: Hà Nội, Hồ Chí Minh, Remote'
-    )
-    city = fields.Char(
-        string='Thành phố',
+    state_id = fields.Many2one(
+        'res.country.state',
+        string='Tỉnh/Thành phố',
+        domain="[('country_id.code', '=', 'VN')]",
         required=True,
         index=True,
-        help='VD: Hà Nội, Hồ Chí Minh'
     )
     district = fields.Char(
         string='Quận/Huyện',
+        index=True,
         help='VD: Quận 1, Đống Đa'
     )
     address = fields.Text(
         string='Địa chỉ chi tiết',
         help='VD: Tầng 10, Tòa nhà ABC, 123 Nguyễn Huệ'
     )
-    sequence = fields.Integer(
-        string='Thứ tự',
-        default=10,
-        help='Thứ tự hiển thị'
-    )
     active = fields.Boolean(
         string='Active',
         default=True,
-        help='Cho phép sử dụng'
     )
 
     _sql_constraints = [
-        ('name_unique', 'unique(name)', 'Tên địa điểm đã tồn tại!'),
-        # ('city_name_unique', 'unique(city)', 'Thành phố đã tồn tại!'),
+        ('district_state_unique', 'unique(state_id, district)', 'Quận/Huyện đã tồn tại trong tỉnh/thành phố này!'),
     ]
 
     def name_get(self):
         result = []
         for record in self:
-            name = record.name
+            name = record.state_id.name or ''
             if record.district:
-                name = f"{record.name} ({record.district})"
+                name = f"{record.district}, {name}"
             result.append((record.id, name))
         return result

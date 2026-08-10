@@ -6,7 +6,9 @@
                 (function () {
                     var params = new URLSearchParams(window.location.search);
                     var salaryId = params.get('salary_level_id');
-                    var locationId = params.get('location_id');
+                    var stateId = params.get('state_id');
+                    var wardId = params.get('ward_id');
+
 
                     function injectParams() {
                         var topbar = document.querySelector('.o_wevent_index_topbar_filters');
@@ -19,14 +21,17 @@
 
                             // Kiểm tra xem menu này đang xử lý filter nào
                             var isSalaryMenu = false;
-                            var isLocationMenu = false;
+                              var isStateMenu = false;
                             if (links.length > 1) {
                                 var secondHref = links[1].getAttribute('href') || '';
                                 if (secondHref.includes('salary_level_id=')) {
                                     isSalaryMenu = true;
                                 }
-                                if (secondHref.includes('location_id=')) {
-                                    isLocationMenu = true;
+                              if (secondHref.includes('state_id=')) {
+                                    isStateMenu = true;
+                                }
+                                if (secondHref.includes('ward_id=')) {
+                                    isWardMenu = true;
                                 }
                             }
 
@@ -41,9 +46,13 @@
                                         url.searchParams.set('salary_level_id', salaryId);
                                     }
 
-                                    // Inject location_id vào các filter KHÔNG phải location
-                                    if (locationId && !isLocationMenu) {
-                                        url.searchParams.set('location_id', locationId);
+                                       // Inject state_id vào các filter KHÔNG phải state
+                                    if (stateId && !isStateMenu) {
+                                        url.searchParams.set('state_id', stateId);
+                                    }
+
+                                    if (wardId && !isWardMenu && !isStateMenu) {
+                                        url.searchParams.set('ward_id', wardId);
                                     }
 
                                     link.setAttribute('href', url.toString());

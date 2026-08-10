@@ -44,22 +44,65 @@
             title: 'Tạo địa điểm mới',
             html: function () {
                 return '<div class="mb-3">'
-                    + '<label class="form-label">Tên địa điểm <span class="text-danger">*</span></label>'
-                    + '<input type="text" id="qc_name" class="form-control" placeholder="VD: Văn phòng Hà Nội">'
+                    + '<label class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>'
+                    + '<select id="qc_state_id" class="form-control" required>'
+                    + '<option value="">-- Chọn tỉnh/thành phố --</option>'
+                    + '</select>'
                     + '</div>'
                     + '<div class="mb-3">'
-                    + '<label class="form-label">Thành phố <span class="text-danger">*</span></label>'
-                    + '<input type="text" id="qc_city" class="form-control" placeholder="VD: Hà Nội">'
+                    + '<label class="form-label">Phường/Xã</label>'
+                    + '<select id="qc_ward_id" class="form-control">'
+                    + '<option value="">-- Chọn phường/xã --</option>'
+                    + '</select>'
                     + '</div>';
             },
             getData: function () {
                 return {
-                    name: (document.getElementById('qc_name') || {}).value.trim(),
-                    city: (document.getElementById('qc_city') || {}).value.trim(),
+                    state_id: (document.getElementById('qc_state_id') || {}).value,
+                    ward_id: (document.getElementById('qc_ward_id') || {}).value,
                 };
             },
-        },
+            onShow: function () {
+                var stateSelect = document.getElementById('qc_state_id');
+                var wardSelect = document.getElementById('qc_ward_id');
+                if (!stateSelect || !wardSelect) return;
 
+                fetch('/hr_recruitment/api/states', {
+                    headers: {'Content-Type': 'application/json'}
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        stateSelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
+                        if (data.states) {
+                            data.states.forEach(function (s) {
+                                var opt = document.createElement('option');
+                                opt.value = s.id;
+                                opt.textContent = s.name;
+                                stateSelect.appendChild(opt);
+                            });
+                        }
+                    });
+
+                stateSelect.onchange = function () {
+                    var stateId = stateSelect.value;
+                    wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+                    if (!stateId) return;
+                    fetch('/hr_recruitment/api/wards?state_id=' + encodeURIComponent(stateId), {
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            (data.wards || []).forEach(function (w) {
+                                var opt = document.createElement('option');
+                                opt.value = w.id;
+                                opt.textContent = w.name;
+                                wardSelect.appendChild(opt);
+                            });
+                        })
+                        .catch(function () {});
+                };
+            }
+        },
         degree: {
             title: 'Tạo trình độ mới',
             html: function () {
@@ -102,11 +145,11 @@
     var currentCallback = null;
 
     // ─── Init ─────────────────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', function () {
-        initSkillField();
-     initEditors();
-     // initPhotoPreview();
-    });
+document.addEventListener('DOMContentLoaded', function () {
+    initSkillField();
+    initEditors();
+    initPortalForms();
+});
 
     // Dùng event delegation trên document để không bị ảnh hưởng bởi thời điểm render
     document.addEventListener('click', function (e) {
@@ -198,6 +241,7 @@
             if (first) first.focus();
         }, 300);
 
+        // Callback theo loại: sau khi lưu thành công
         // Load skill types khi mở modal skill
         if (type === 'skill') {
             loadSkillTypes();
@@ -250,6 +294,7 @@
     function addOptionAndSelect(selectId, id, name) {
         var sel = document.getElementById(selectId);
         if (!sel) return;
+        // Kiểm tra trùng
         if (sel.querySelector('option[value="' + id + '"]')) {
             sel.value = id;
             return;
@@ -262,18 +307,20 @@
     // ═════════════════════════════════════════════════════════════════════════
     //  SKILL MANY2MANY TAG FIELD
     // ═════════════════════════════════════════════════════════════════════════
-    var skillSelected = new Set();
-    var skillAllOpts = [];
+    var skillSelected = new Set();   // Set<string> của id đã chọn
+    var skillAllOpts = [];          // [{id, label, el}] cache options
 
     function initSkillField() {
         var dropdown = document.getElementById('skill_dropdown');
         var searchInp = document.getElementById('skill_search_input');
         if (!dropdown || !searchInp) return;
 
+        // Cache
         skillAllOpts = Array.from(dropdown.querySelectorAll('li')).map(function (li) {
             return {id: String(li.dataset.id), label: li.dataset.label, el: li};
         });
 
+        // Pre-load selected skills (for edit page) - defer slightly to ensure inline script ran
         setTimeout(function() {
             if (window._preselectedSkills && Array.isArray(window._preselectedSkills)) {
                 window._preselectedSkills.forEach(function(skill) {
@@ -284,6 +331,7 @@
             }
         }, 300);
 
+        // Search input
         searchInp.addEventListener('focus', function () {
             filterSkillDropdown(this.value);
             dropdown.classList.remove('d-none');
@@ -294,6 +342,7 @@
             dropdown.classList.remove('d-none');
         });
 
+        // Click chọn từ dropdown
         dropdown.addEventListener('mousedown', function (e) {
             var li = e.target.closest('li');
             if (!li || li.classList.contains('sd-no-result')) return;
@@ -304,6 +353,7 @@
             dropdown.classList.add('d-none');
         });
 
+        // Đóng dropdown khi click ngoài
         document.addEventListener('click', function (e) {
             var skillField = document.getElementById('skill_field');
             if (skillField && !skillField.contains(e.target)) {
@@ -341,11 +391,13 @@
         }
     }
 
+    // Thêm tag vào UI + sinh hidden input
     function addSkillTag(id, label) {
         id = String(id);
         if (skillSelected.has(id)) return;
         skillSelected.add(id);
 
+        // Hidden input
         var form = document.getElementById('job_form') || document.getElementById('job_edit_form');
         if (form) {
             var inp = document.createElement('input');
@@ -356,6 +408,7 @@
             form.appendChild(inp);
         }
 
+        // Tag chip
         var tagsWrap = document.getElementById('skill_tags_wrap');
         if (tagsWrap) {
             var tag = document.createElement('span');
@@ -369,6 +422,7 @@
             tagsWrap.appendChild(tag);
         }
 
+        // Ẩn khỏi dropdown
         skillAllOpts.forEach(function (o) {
             if (o.id === id) o.el.style.display = 'none';
         });
@@ -384,6 +438,7 @@
         var tag = document.querySelector('#skill_tags_wrap .m2m-tag[data-id="' + id + '"]');
         if (tag) tag.remove();
 
+        // Hiện lại trong dropdown nếu khớp filter hiện tại
         skillAllOpts.forEach(function (o) {
             if (o.id === id) {
                 var q = document.getElementById('skill_search_input').value;
@@ -392,6 +447,7 @@
         });
     }
 
+    // Thêm option mới vào cache + DOM dropdown (dùng sau khi tạo mới)
     function addSkillOption(id, name) {
         id = String(id);
         var dropdown = document.getElementById('skill_dropdown');
@@ -399,7 +455,7 @@
         li.dataset.id = id;
         li.dataset.label = name;
         li.textContent = name;
-        li.style.display = 'none';
+        li.style.display = 'none'; // vừa được chọn thành tag rồi, ẩn đi
         dropdown.appendChild(li);
         skillAllOpts.push({id: id, label: name, el: li});
     }
@@ -411,7 +467,9 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({jsonrpc: '2.0', method: 'call', params: {}}),
         })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                return r.json();
+            })
             .then(function (data) {
                 var sel = document.getElementById('qc_skill_type');
                 if (!sel) return;
@@ -421,7 +479,8 @@
                         return '<option value="' + t.id + '">' + t.name + '</option>';
                     }).join('');
             })
-            .catch(function () {});
+            .catch(function () {
+            });
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -433,7 +492,9 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({jsonrpc: '2.0', method: 'call', params: params}),
         })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                return r.json();
+            })
             .then(function (data) {
                 var result = data.result;
                 if (result && result.success) {
@@ -467,10 +528,7 @@
     }
 
 })();
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  RICH TEXT EDITOR
-// ═════════════════════════════════════════════════════════════════════════════
+// style text
 function createSimpleEditor(textarea) {
     if (textarea.dataset.editorInitialized) return;
     textarea.dataset.editorInitialized = 'true';
@@ -520,8 +578,12 @@ function createSimpleEditor(textarea) {
             document.execCommand(def.cmd, false, def.value || null);
             ed.focus();
         });
-        b.addEventListener('mouseover', function () { b.style.background = '#e9ecef'; });
-        b.addEventListener('mouseout', function () { b.style.background = '#fff'; });
+        b.addEventListener('mouseover', function () {
+            b.style.background = '#e9ecef';
+        });
+        b.addEventListener('mouseout', function () {
+            b.style.background = '#fff';
+        });
         toolbar.appendChild(b);
     });
 
@@ -585,6 +647,7 @@ function createSimpleEditor(textarea) {
     }
 }
 
+
 // ═════════════════════════════════════════════════════════════════════════════
 //  PHOTO PREVIEW
 // ═════════════════════════════════════════════════════════════════════════════
@@ -632,9 +695,34 @@ document.addEventListener('change', function (e) {
     }
 });
 
-// ═════════════════════════════════════════════════════════════════════════════
-//  EDITORS + PHOTO — khởi chạy sau khi toàn bộ trang load xong
-// ═════════════════════════════════════════════════════════════════════════════
+
+function initPortalForms() {
+    ['job_form', 'job_edit_form'].forEach(function (formId) {
+        var form = document.getElementById(formId);
+        if (!form) return;
+        var stateEl = form.querySelector('select[name="state_id"]');
+        var wardEl = form.querySelector('select[name="ward_id"]');
+        if (!stateEl || !wardEl) return;
+
+        stateEl.addEventListener('change', function () {
+            var stateId = stateEl.value;
+            wardEl.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+            if (!stateId) return;
+            fetch('/hr_recruitment/api/wards?state_id=' + encodeURIComponent(stateId), {
+                headers: {'Content-Type': 'application/json'}
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    (data.wards || []).forEach(function (w) {
+                        var opt = new Option(w.name, w.id, false, false);
+                        wardEl.appendChild(opt);
+                    });
+                })
+                .catch(function () {});
+        });
+    });
+}
+
 function initEditors() {
     if (window._editPrefill) {
         var p = window._editPrefill;
@@ -642,13 +730,10 @@ function initEditors() {
         var hReq  = document.getElementById('hidden_requirements');
         var hBen  = document.getElementById('hidden_benefits');
         if (hDesc && p.description) hDesc.value = p.description;
-        if (hReq  && p.requirements) hReq.value  = p.requirements;
-        if (hBen  && p.benefits)     hBen.value   = p.benefits;
+        if (hReq  && p.requirements) hReq.value = p.requirements;
+        if (hBen  && p.benefits)     hBen.value = p.benefits;
     }
+
     document.querySelectorAll('textarea.sre-target').forEach(createSimpleEditor);
 }
-
-window.addEventListener('load', function () {
-    // initPhotoPreview();
-    initEditors();
-});
+window.addEventListener('load', initEditors);

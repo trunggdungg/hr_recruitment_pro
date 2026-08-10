@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="job_filter_by_ward" inherit_id="website_hr_recruitment.topbar_customizations"
+              active="True" priority="47">
+        <xpath expr="//div[hasclass('o_jobs_topbar_search_bar')]" position="before">
+
+            <!-- Chỉ hiển thị filter phường/xã khi đã chọn tỉnh/thành -->
+            <t t-if="state_id">
+
+                <t t-set="ward_domain" t-value="[('website_published', '=', True), ('ward_id', '!=', False), ('state_id', '=', state_id.id)]"/>
+                <t t-if="request.params.get('industry_id')">
+                    <t t-set="ward_domain" t-value="ward_domain + [('industry_id', '=', int(request.params.get('industry_id')))]"/>
+                </t>
+                <t t-if="request.params.get('department_id')">
+                    <t t-set="ward_domain" t-value="ward_domain + [('department_id', '=', int(request.params.get('department_id')))]"/>
+                </t>
+                <t t-if="request.params.get('contract_type_id')">
+                    <t t-set="ward_domain" t-value="ward_domain + [('contract_type_id', '=', int(request.params.get('contract_type_id')))]"/>
+                </t>
+                <t t-if="request.params.get('salary_level_id')">
+                    <t t-set="ward_domain" t-value="ward_domain + [('salary_level_id', '=', int(request.params.get('salary_level_id')))]"/>
+                </t>
+
+                <t t-set="wards" t-value="request.env['res.ward'].sudo().search([('state_id', '=', state_id.id)], order='name')"/>
+                <t t-set="ward_job_counts" t-value="{g['ward_id'][0]: g['ward_id_count'] for g in request.env['hr.job'].sudo().read_group(ward_domain, ['ward_id'], ['ward_id'])}"/>
+                <t t-set="wards_with_jobs" t-value="wards.filtered(lambda w: ward_job_counts.get(w.id, 0) > 0)"/>
+
+                <t t-if="wards_with_jobs">
+                    <t t-set="current_ward_id" t-value="ward_id.id if ward_id else None"/>
+                    <div class="dropdown d-none d-lg-block">
+                        <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+                            <t t-if="ward_id"><t t-out="ward_id.name"/></t>
+                            <t t-else="">Phường/Xã</t>
+                        </button>
+                        <div class="dropdown-menu w-100 w-md-auto">
+                            <t t-set="params_no_ward" t-value="dict((k,v) for k,v in request.params.items() if k not in ('ward_id', 'page'))"/>
+                            <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_no_ward.items())"
+                               t-attf-class="dropdown-item#{' active' if not current_ward_id else ''}">
+                                Tất cả phường/xã
+                                <span class="badge ms-1"><t t-out="sum(ward_job_counts.values())"/></span>
+                            </a>
+                            <t t-foreach="wards_with_jobs" t-as="wd">
+                                <t t-set="params_with_ward" t-value="dict((k,v) for k,v in request.params.items() if k not in ('ward_id', 'page'))"/>
+                                <t t-set="dummy_w" t-value="params_with_ward.update({'ward_id': wd.id})"/>
+                                <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_with_ward.items())"
+                                   t-attf-class="dropdown-item#{' active' if current_ward_id == wd.id else ''}">
+                                    <t t-out="wd.name"/>
+                                    <span class="badge ms-1"><t t-out="ward_job_counts.get(wd.id, 0)"/></span>
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </t>
+
+        </xpath>
+
+        <!-- Mobile accordion -->
+        <xpath expr="//div[hasclass('accordion-flush')]" position="inside">
+            <t t-if="state_id and wards_with_jobs">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                t-att-data-bs-target="'#wardDropdown'"
+                                aria-expanded="false">
+                            Phường/Xã
+                        </button>
+                    </h2>
+                    <div id="wardDropdown" class="accordion-collapse collapse"
+                         t-att-data-bs-parent="'#o_jobs_offcanvas'">
+                        <div class="accordion-body pt-0">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0 border-0">
+                                    <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_no_ward.items())"
+                                       class="d-flex align-items-center justify-content-between text-reset text-decoration-none">
+                                        <div class="form-check flex-basis-100">
+                                            <input class="form-check-input pe-none" type="radio"
+                                                   name="ward_all"
+                                                   t-att-checked="not current_ward_id"/>
+                                            <label class="form-check-label">Tất cả phường/xã</label>
+                                        </div>
+                                        <span class="badge pagination text-bg-primary ms-2">
+                                            <t t-out="sum(ward_job_counts.values())"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                <t t-foreach="wards_with_jobs" t-as="wd">
+                                    <t t-set="params_with_ward_m" t-value="dict((k,v) for k,v in request.params.items() if k not in ('ward_id', 'page'))"/>
+                                    <t t-set="dummy_wm" t-value="params_with_ward_m.update({'ward_id': wd.id})"/>
+                                    <li class="list-group-item px-0 border-0">
+                                        <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_with_ward_m.items())"
+                                           class="d-flex align-items-center justify-content-between text-reset text-decoration-none">
+                                            <div class="form-check flex-basis-100">
+                                                <input class="form-check-input pe-none" type="radio"
+                                                       t-attf-name="ward_#{wd.id}"
+                                                       t-att-checked="current_ward_id == wd.id"/>
+                                                <label class="form-check-label" t-out="wd.name"/>
+                                            </div>
+                                            <span class="badge pagination text-bg-primary ms-2">
+                                                <t t-out="ward_job_counts.get(wd.id, 0)"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

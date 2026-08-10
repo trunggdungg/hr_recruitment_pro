@@ -195,8 +195,8 @@
                                         <div class="col-md-12">
                                             <label class="text-muted small">Giới thiệu ngắn</label>
                                             <div class="mb-0 border rounded p-2 bg-light">
-                                                <t t-if="applicant.applicant_notes">
-                                                    <t t-raw="applicant.applicant_notes"/>
+                                                <t t-if="applicant.short_intro_candidate">
+                                                    <t t-raw="applicant.short_intro_candidate"/>
                                                 </t>
                                                 <t t-else="">-</t>
                                             </div>
@@ -284,6 +284,18 @@
                                         Vui lòng chọn ngày giờ phỏng vấn.
                                     </div>
                                 </t>
+                                <t t-elif="msg == 'past_date'">
+                                    <div class="alert alert-danger">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>
+                                        <strong>Lỗi!</strong> Ngày phỏng vấn không được là ngày trong quá khứ. Vui lòng chọn ngày giờ hợp lệ.
+                                    </div>
+                                </t>
+                                <t t-elif="msg == 'invalid_date'">
+                                    <div class="alert alert-danger">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>
+                                        Định dạng ngày giờ không hợp lệ.
+                                    </div>
+                                </t>
 
                                 <!-- Form gửi email -->
                                 <h5 class="card-title mb-3">
@@ -301,7 +313,8 @@
                                             </label>
                                             <input type="datetime-local" class="form-control" name="interview_date"
                                                    required="required"
-                                                   t-att-value="applicant.interview_date.strftime('%Y-%m-%dT%H:%M') if applicant.interview_date else ''"/>
+                                                   t-att-value="applicant.interview_date.strftime('%Y-%m-%dT%H:%M') if applicant.interview_date else ''"
+                                                   min=""/>
                                         </div>
 
                                     </div>
@@ -422,6 +435,14 @@
                                 switchStage(action);
                             });
                         });
+
+                        // Set min datetime cho input interview_date (không cho chọn ngày quá khứ)
+                        var interviewInput = document.querySelector('input[name="interview_date"]');
+                        if (interviewInput) {
+                            var now = new Date();
+                            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                            interviewInput.min = now.toISOString().slice(0, 16);
+                        }
                     });
 
                     function switchStage(action) {

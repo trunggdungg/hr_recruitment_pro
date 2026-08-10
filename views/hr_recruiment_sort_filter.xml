@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="job_sort_filter" inherit_id="website_hr_recruitment.topbar_customizations"
+              active="True" priority="44">
+        <!-- Desktop: Thêm dropdown Sort vào trc topbar-->
+        <xpath expr="//div[hasclass('o_jobs_topbar_search_bar')]" position="before">
+            <div class="dropdown d-none d-lg-block ms-2">
+                <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+<!--                    <i class="fa fa-sort me-1"/>-->
+                    <t t-if="sort_param == 'name_asc'">Tên: A đến Z</t>
+                    <t t-elif="sort_param == 'name_desc'">Tên: Z đến A</t>
+                    <t t-elif="sort_param == 'date_desc'">Mới nhất</t>
+                    <t t-elif="sort_param == 'date_asc'">Cũ nhất</t>
+                    <t t-else="">Sắp xếp</t>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <!-- Default: Xóa sort param -->
+                    <t t-set="params_no_sort" t-value="dict((k,v) for k,v in request.params.items() if k not in ('sort', 'page'))"/>
+                    <a t-att-href="'/jobs' + ('?' + '&amp;'.join(k+'='+str(v) for k,v in params_no_sort.items()) if params_no_sort else '')"
+                       t-attf-class="dropdown-item#{' active' if not sort_param else ''}">
+                        <i class="fa fa-check me-1 text-success" t-if="not sort_param"/>
+                        Mặc định
+                    </a>
+                    <div class="dropdown-divider"/>
+                    <!-- Sort by Name -->
+                    <t t-set="params_name_asc" t-value="dict((k,v) for k,v in request.params.items() if k not in ('sort', 'page'))"/>
+                    <t t-set="dummy" t-value="params_name_asc.update({'sort': 'name_asc'})"/>
+                    <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_name_asc.items())"
+                       t-attf-class="dropdown-item#{' active' if sort_param == 'name_asc' else ''}">
+                        <i class="fa fa-check me-1 text-success" t-if="sort_param == 'name_asc'"/>
+                       Tên: A đến Z
+                    </a>
+                    <t t-set="params_name_desc" t-value="dict((k,v) for k,v in request.params.items() if k not in ('sort', 'page'))"/>
+                    <t t-set="dummy" t-value="params_name_desc.update({'sort': 'name_desc'})"/>
+                    <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_name_desc.items())"
+                       t-attf-class="dropdown-item#{' active' if sort_param == 'name_desc' else ''}">
+                        <i class="fa fa-check me-1 text-success" t-if="sort_param == 'name_desc'"/>
+                        Tên: Z đến A
+                    </a>
+                    <div class="dropdown-divider"/>
+                    <!-- Sort by Date -->
+                    <t t-set="params_date_desc" t-value="dict((k,v) for k,v in request.params.items() if k not in ('sort', 'page'))"/>
+                    <t t-set="dummy" t-value="params_date_desc.update({'sort': 'date_desc'})"/>
+                    <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_date_desc.items())"
+                       t-attf-class="dropdown-item#{' active' if sort_param == 'date_desc' else ''}">
+                        <i class="fa fa-check me-1 text-success" t-if="sort_param == 'date_desc'"/>
+                        Mới nhất
+                    </a>
+                    <t t-set="params_date_asc" t-value="dict((k,v) for k,v in request.params.items() if k not in ('sort', 'page'))"/>
+                    <t t-set="dummy" t-value="params_date_asc.update({'sort': 'date_asc'})"/>
+                    <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_date_asc.items())"
+                       t-attf-class="dropdown-item#{' active' if sort_param == 'date_asc' else ''}">
+                        <i class="fa fa-check me-1 text-success" t-if="sort_param == 'date_asc'"/>
+                        Cũ nhất
+                    </a>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Mobile: Thêm accordion item cho Sort -->
+        <xpath expr="//div[hasclass('accordion-flush')]" position="inside">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#sortDropdown"
+                            aria-expanded="false">
+                        <i class="fa fa-sort me-2"/>
+                        <t t-if="sort_param == 'name_asc'">Tên: A đến Z</t>
+                        <t t-elif="sort_param == 'name_desc'">Tên: Z đến A</t>
+                        <t t-elif="sort_param == 'date_desc'">Mới nhất</t>
+                        <t t-elif="sort_param == 'date_asc'">Cũ nhất</t>
+                        <t t-else="">Sắp xếp</t>
+                    </button>
+                </h2>
+                <div id="sortDropdown" class="accordion-collapse collapse"
+                     data-bs-parent="#o_jobs_offcanvas">
+                    <div class="accordion-body pt-0">
+                        <ul class="list-group list-group-flush">
+                            <!-- Default -->
+                            <li class="list-group-item px-0 border-0">
+                                <a t-attf-href="/jobs?#{'&amp;'.join(k+'='+str(v) for k,v in params_no_sort.items()) if params_no_sort else ''}"
+                                   class="d-flex align-items-center text-reset text-decoration-none #{'text-primary fw-bold' if not sort_param else ''}">
+                                    <i class="fa fa-check me-2 text-success" t-if="not sort_param"/>
+                                    <t t-else="">
+                                        <span class="me-3"/>
+                                    </t>
+                                    Mặc định
+                                </a>
+                            </li>
+                            <!-- A → Z -->
+                            <li class="list-group-item px-0 border-0">
+                                <a t-attf-href="/jobs?#{'&amp;'.join(k+'='+str(v) for k,v in params_name_asc.items())}"
+                                   class="d-flex align-items-center text-reset text-decoration-none #{'text-primary fw-bold' if sort_param == 'name_asc' else ''}">
+                                    <i class="fa fa-check me-2 text-success" t-if="sort_param == 'name_asc'"/>
+                                    <t t-else="">
+                                        <span class="me-3"/>
+                                    </t>
+                                    Tên: A đến Z
+                                </a>
+                            </li>
+                            <!-- Z → A -->
+                            <li class="list-group-item px-0 border-0">
+                                <a t-attf-href="/jobs?#{'&amp;'.join(k+'='+str(v) for k,v in params_name_desc.items())}"
+                                   class="d-flex align-items-center text-reset text-decoration-none #{'text-primary fw-bold' if sort_param == 'name_desc' else ''}">
+                                    <i class="fa fa-check me-2 text-success" t-if="sort_param == 'name_desc'"/>
+                                    <t t-else="">
+                                        <span class="me-3"/>
+                                    </t>
+                                    Tên: Z đến A
+                                </a>
+                            </li>
+                            <!-- Mới nhất -->
+                            <li class="list-group-item px-0 border-0">
+                                <a t-attf-href="/jobs?#{'&amp;'.join(k+'='+str(v) for k,v in params_date_desc.items())}"
+                                   class="d-flex align-items-center text-reset text-decoration-none #{'text-primary fw-bold' if sort_param == 'date_desc' else ''}">
+                                    <i class="fa fa-check me-2 text-success" t-if="sort_param == 'date_desc'"/>
+                                    <t t-else="">
+                                        <span class="me-3"/>
+                                    </t>
+                                    Mới nhất
+                                </a>
+                            </li>
+                            <!-- Cũ nhất -->
+                            <li class="list-group-item px-0 border-0">
+                                <a t-attf-href="/jobs?#{'&amp;'.join(k+'='+str(v) for k,v in params_date_asc.items())}"
+                                   class="d-flex align-items-center text-reset text-decoration-none #{'text-primary fw-bold' if sort_param == 'date_asc' else ''}">
+                                    <i class="fa fa-check me-2 text-success" t-if="sort_param == 'date_asc'"/>
+                                    <t t-else="">
+                                        <span class="me-3"/>
+                                    </t>
+                                    Cũ nhất
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

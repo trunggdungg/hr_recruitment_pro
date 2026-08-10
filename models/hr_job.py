@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from odoo.exceptions import UserError
 from odoo import models, fields, api
 from datetime import date
-
+from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
@@ -26,12 +25,35 @@ class HrJobInherit(models.Model):
         tracking=True,
         help='Chọn mức lương cho vị trí tuyển dụng'
     )
-    location_id = fields.Many2one(
-        'hr.recruitment.location',
-        string='Địa Điểm',
+    state_id = fields.Many2one(
+        'res.country.state',
+        string='Tỉnh/Thành phố',
+        domain="[('country_id.code', '=', 'VN')]",
         tracking=True,
-        help='Chọn địa điểm làm việc'
+        help='Chọn tỉnh/thành phố làm việc',
+        copy=False,
     )
+    ward_id = fields.Many2one(
+        'res.ward',
+        string='Phường/Xã',
+        domain="[('state_id', '=', state_id)]",
+        tracking=True,
+        copy=False,
+    )
+    job_address = fields.Text(
+        string='Địa chỉ chi tiết',
+        tracking=True,
+        help='VD: Tầng 9, Tòa nhà PLC, Phan Tây NHạc',
+        copy=False,
+    )
+    is_pinned = fields.Boolean(
+        string='Ghim tin',
+        default=False,
+        index=True,
+        tracking=True,
+        help='Đánh dấu tin tuyển dụng này được ghim lên đầu danh sách'
+    )
+
     contract_type_id = fields.Many2one(
         'hr.contract.type',
         string='Loại công việc',
@@ -119,6 +141,10 @@ class HrJobInherit(models.Model):
         readonly=True,
         copy=False
     )
+    moderation_reason = fields.Selection([
+        ('admin_rejected', 'Admin từ chối'),
+        ('expired', 'Hết hạn tự động'),
+    ], string='Lý do trạng thái', copy=False)
 
     def action_moderation_pending(self):
         """Chuyển sang trạng thái chờ duyệt (portal user submit)"""
@@ -148,6 +174,7 @@ class HrJobInherit(models.Model):
         self.ensure_one()
         self.write({
             'moderation_state': 'rejected',
+            'moderation_reason': 'admin_rejected',
             'moderation_date': fields.Datetime.now(),
             'moderator_id': self.env.user.id,
             'moderation_note': note or False,
@@ -175,22 +202,39 @@ class HrJobInherit(models.Model):
         return super().create(vals_list)
 
     def _cron_auto_unpublish_expired_jobs(self):
-        """Cron: Tự động gỡ bài đăng khi hết hạn"""
         today = date.today()
-        # Tìm các job đang được đăng, có hạn chót, và đã hết hạn
+
         expired_jobs = self.search([
             ('website_published', '=', True),
             ('application_deadline', '!=', False),
             ('application_deadline', '<', today),
             ('active', '=', True),
         ])
+
         for job in expired_jobs:
-            job.write({'website_published': False})
+            write_vals = {'website_published': False}
+
+            if job.recruiter_id:
+                write_vals['moderation_state'] = 'rejected'
+                write_vals['moderation_reason'] = 'expired'
+                write_vals['moderation_note'] = (
+                    f'Tin tuyển dụng đã tự động gỡ do hết hạn vào ngày '
+                    f'{job.application_deadline.strftime("%d/%m/%Y")}. '
+                    f'Vui lòng cập nhật hạn nộp hồ sơ và gửi lại để được duyệt.'
+                )
+
+            job.write(write_vals)
+
+            # Chỉ ghi chatter, không gửi email
             job.message_post(
-                body=f'Tin tuyển dụng đã tự động gỡ do hết hạn vào ngày {job.application_deadline.strftime("%d/%m/%Y")}.',
-                message_type='notification',
+                body=(
+                    f'Tin tuyển dụng "{job.name}" đã tự động gỡ do hết hạn '
+                    f'vào ngày {job.application_deadline.strftime("%d/%m/%Y")}. '
+                    f'Vui lòng cập nhật hạn nộp hồ sơ và gửi lại để được duyệt.'
+                ),
                 subtype_xmlid='mail.mt_note',
             )
+
         return True
 
     def write(self, vals):
@@ -212,12 +256,22 @@ class HrJobInherit(models.Model):
             job = self
             content_fields = {
                 'name', 'description', 'requirements', 'benefits',
-                'salary_level_id', 'location_id', 'contract_type_id', 'degree_id',
+                'salary_level_id',  'state_id', 'job_address', 'contract_type_id', 'degree_id',
                 'experience_level', 'remote_policy', 'working_hours',
                 'gender_require', 'age_require', 'trial_period', 'application_deadline',
                 'no_of_recruitment',
             }
             is_content_edit = bool(content_fields & set(vals.keys()))
+
+            if vals.get('is_pinned') is True:
+                for job in self:
+                    pinned_count = self.search_count([
+                        ('is_pinned', '=', True),
+                        ('active', '=', True),
+                        ('id', '!=', job.id),
+                    ])
+                    if pinned_count >= 2:
+                        raise UserError('Chỉ được ghim tối đa 2 tin tuyển dụng.')
 
             if (user.share
                     and job.is_portal_job
@@ -238,8 +292,6 @@ class HrJobInherit(models.Model):
             'url': url,
             'target': 'new',  # mở tab mới, đổi thành 'self' nếu muốn cùng tab
         }
-
-    # Thêm vào class HrJobInherit trong models/hr_job.py
 
     def copy(self, default=None):
         default = default or {}
@@ -262,3 +314,7 @@ class HrJobInherit(models.Model):
                 'moderation_note': False,
             })
         return super().copy(default)
+
+    @api.onchange('state_id')
+    def _onchange_state_id_reset_ward(self):
+        self.ward_id = False

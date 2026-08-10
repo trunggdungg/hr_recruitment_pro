@@ -1,51 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="job_filter_by_location" inherit_id="website_hr_recruitment.topbar_customizations"
+    <template id="job_filter_by_state" inherit_id="website_hr_recruitment.topbar_customizations"
               active="True" priority="46">
         <xpath expr="//div[hasclass('o_jobs_topbar_search_bar')]" position="before">
 
-            <t t-set="location_domain" t-value="[('website_published', '=', True), ('location_id', '!=', False)]"/>
+            <t t-set="state_domain" t-value="[('website_published', '=', True), ('state_id', '!=', False)]"/>
             <t t-if="request.params.get('industry_id')">
-                <t t-set="location_domain" t-value="location_domain + [('industry_id', '=', int(request.params.get('industry_id')))]"/>
+                <t t-set="state_domain" t-value="state_domain + [('industry_id', '=', int(request.params.get('industry_id')))]"/>
             </t>
             <t t-if="request.params.get('department_id')">
-                <t t-set="location_domain" t-value="location_domain + [('department_id', '=', int(request.params.get('department_id')))]"/>
+                <t t-set="state_domain" t-value="state_domain + [('department_id', '=', int(request.params.get('department_id')))]"/>
             </t>
             <t t-if="request.params.get('contract_type_id')">
-                <t t-set="location_domain" t-value="location_domain + [('contract_type_id', '=', int(request.params.get('contract_type_id')))]"/>
+                <t t-set="state_domain" t-value="state_domain + [('contract_type_id', '=', int(request.params.get('contract_type_id')))]"/>
             </t>
             <t t-if="request.params.get('salary_level_id')">
-                <t t-set="location_domain" t-value="location_domain + [('salary_level_id', '=', int(request.params.get('salary_level_id')))]"/>
+                <t t-set="state_domain" t-value="state_domain + [('salary_level_id', '=', int(request.params.get('salary_level_id')))]"/>
             </t>
 
-            <t t-set="locations" t-value="request.env['hr.recruitment.location'].sudo().search([('active', '=', True)], order='sequence')"/>
-            <t t-set="job_counts" t-value="{g['location_id'][0]: g['location_id_count'] for g in request.env['hr.job'].sudo().read_group(location_domain, ['location_id'], ['location_id'])}"/>
-            <t t-set="locations_with_jobs" t-value="locations.filtered(lambda l: job_counts.get(l.id, 0) > 0)"/>
+            <t t-set="states" t-value="request.env['res.country.state'].sudo().search([('country_id.code', '=', 'VN')], order='name')"/>
+            <t t-set="job_counts" t-value="{g['state_id'][0]: g['state_id_count'] for g in request.env['hr.job'].sudo().read_group(state_domain, ['state_id'], ['state_id'])}"/>
+            <t t-set="states_with_jobs" t-value="states.filtered(lambda s: job_counts.get(s.id, 0) > 0)"/>
 
-            <t t-if="locations_with_jobs">
-                <t t-set="current_location_id" t-value="location_id.id if location_id else None"/>
+            <t t-if="states_with_jobs">
+                <t t-set="current_state_id" t-value="state_id.id if state_id else None"/>
                 <div class="dropdown d-none d-lg-block">
                     <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
-                        <t t-if="location_id"><t t-out="location_id.city"/></t>
+                        <t t-if="state_id"><t t-out="state_id.name"/></t>
                         <t t-else="">Địa Điểm</t>
                     </button>
                     <div class="dropdown-menu w-100 w-md-auto">
-                        <t t-set="params_no_location" t-value="dict((k,v) for k,v in request.params.items() if k not in ('location_id', 'page'))"/>
-                        <a t-att-href="'/jobs' + ('?' + '&amp;'.join(k+'='+str(v) for k,v in params_no_location.items()) if params_no_location else '')"
-                           t-attf-class="dropdown-item#{' active' if not current_location_id else ''}">
+                        <t t-set="params_no_state" t-value="dict((k,v) for k,v in request.params.items() if k not in ('state_id', 'ward_id', 'page'))"/>
+                        <a t-att-href="'/jobs' + ('?' + '&amp;'.join(k+'='+str(v) for k,v in params_no_state.items()) if params_no_state else '')"
+                           t-attf-class="dropdown-item#{' active' if not current_state_id else ''}">
                             Tất cả địa điểm
                             <span class="badge ms-1"><t t-out="sum(job_counts.values())"/></span>
                         </a>
-                        <t t-foreach="locations_with_jobs" t-as="loc">
-                            <t t-set="params_with_location" t-value="dict((k,v) for k,v in request.params.items() if k not in ('location_id', 'page'))"/>
-                            <t t-set="dummy" t-value="params_with_location.update({'location_id': loc.id})"/>
-                            <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_with_location.items())"
-                               t-attf-class="dropdown-item#{' active' if current_location_id == loc.id else ''}">
-                                <t t-out="loc.city"/>
-                                <t t-if="loc.district">
-                                    <span class="text-muted"> - <t t-out="loc.district"/></span>
-                                </t>
-                                <span class="badge ms-1"><t t-out="job_counts.get(loc.id, 0)"/></span>
+                        <t t-foreach="states_with_jobs" t-as="st">
+                            <t t-set="params_with_state" t-value="dict((k,v) for k,v in request.params.items() if k not in ('state_id', 'ward_id', 'page'))"/>
+                            <t t-set="dummy" t-value="params_with_state.update({'state_id': st.id})"/>
+                            <a t-att-href="'/jobs?' + '&amp;'.join(k+'='+str(v) for k,v in params_with_state.items())"
+                               t-attf-class="dropdown-item#{' active' if current_state_id == st.id else ''}">
+                                <t t-out="st.name"/>
+                                <span class="badge ms-1"><t t-out="job_counts.get(st.id, 0)"/></span>
                             </a>
                         </t>
                     </div>
@@ -53,5 +50,57 @@
             </t>
 
         </xpath>
+<!--        mobile-->
+        <xpath expr="//div[hasclass('accordion-flush')]" position="inside">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse"
+                    t-att-data-bs-target="'#stateDropdown'"
+                    aria-expanded="false">
+                Địa Điểm
+            </button>
+        </h2>
+        <div id="stateDropdown" class="accordion-collapse collapse"
+             t-att-data-bs-parent="'#o_jobs_offcanvas'">
+            <div class="accordion-body pt-0">
+                <ul class="list-group list-group-flush">
+                    <t t-if="states_with_jobs">
+                        <li class="list-group-item px-0 border-0">
+                            <a t-attf-href="/jobs?state_id=&amp;#{params_no_state}"
+                               class="d-flex align-items-center justify-content-between text-reset text-decoration-none">
+                                <div class="form-check flex-basis-100">
+                                    <input class="form-check-input pe-none" type="radio"
+                                           name="state_all"
+                                           t-att-checked="not current_state_id"/>
+                                    <label class="form-check-label">Tất cả địa điểm</label>
+                                </div>
+                                <span class="badge pagination text-bg-primary ms-2">
+                                    <t t-out="sum(job_counts.values())"/>
+                                </span>
+                            </a>
+                        </li>
+                        <t t-foreach="states_with_jobs" t-as="st">
+                            <li class="list-group-item px-0 border-0">
+                                <a t-attf-href="/jobs?state_id=#{st.id}&amp;#{params_no_state}"
+                                   class="d-flex align-items-center justify-content-between text-reset text-decoration-none">
+                                    <div class="form-check flex-basis-100">
+                                        <input class="form-check-input pe-none" type="radio"
+                                               t-attf-name="state_#{st.id}"
+                                               t-att-checked="current_state_id == st.id"/>
+                                        <label class="form-check-label" t-out="st.name"/>
+                                    </div>
+                                    <span class="badge pagination text-bg-primary ms-2">
+                                        <t t-out="job_counts.get(st.id, 0)"/>
+                                    </span>
+                                </a>
+                            </li>
+                        </t>
+                    </t>
+                </ul>
+            </div>
+        </div>
+    </div>
+</xpath>
     </template>
 </odoo>

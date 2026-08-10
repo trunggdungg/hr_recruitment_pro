@@ -68,9 +68,10 @@
                                                                      t-att-src="'/web/image/hr.job/%s/hr_job_photo' % job.id"
                                                                      alt="Job Image"/>
 
-<!--                                                                <img t-elif="job.company_id and job.company_id.logo"-->
-<!--                                                                     t-att-src="'/web/image/res.company/%s/logo' % job.company_id.id"-->
-<!--                                                                     alt="Logo"/>-->
+
+                                                                        <img t-elif="job.user_id and job.user_id.partner_id.avatar_128"
+                                                                             t-att-src="'/web/image/res.partner/%s/avatar_128' % job.user_id.partner_id.id"
+                                                                             alt="Recruiter Avatar"/>
 
                                                                 <t t-else="">
                                                                     <t t-out="(job.name or 'JO')[:2].upper()"/>
@@ -81,6 +82,11 @@
                                                             <span t-if="not job.website_published"
                                                                   class="badge text-bg-danger mb-1 d-block"
                                                                   style="width:fit-content;">unpublished
+                                                            </span>
+<!--                                                            them icon ghim tin-->
+                                                            <span t-if="job.is_pinned"
+                                                                  class="badge text-bg-warning mb-1 d-block"
+                                                                  style="width:fit-content;">📌 Đã ghim
                                                             </span>
                                                             <div class="o_job_title" t-out="job.name"/>
                                                             <div class="o_job_company" t-if="job.company_id"
@@ -94,14 +100,12 @@
                                                             <t t-out="job.no_of_recruitment"/>
                                                             vị trí
                                                         </span>
-                                                        <span t-if="job.location_id" class="o_job_tag">
+                                                        <span t-if="job.state_id" class="o_job_tag">
                                                             <i class="fa fa-map-marker me-1"/>
-                                                            <t t-out="job.location_id.name"/>
-                                                        </span>
-                                                        <span t-elif="job.location_id and job.location_id.city"
-                                                              class="o_job_tag">
-                                                            <i class="fa fa-map-marker me-1"/>
-                                                            <t t-out="job.location_id.city"/>
+                                                            <t t-out="job.state_id.name"/>
+<!--                                                            <t t-if="job.ward_id">-->
+<!--                                                                <span class="text-muted"> - <t t-esc="job.ward_id.name"/></span>-->
+<!--                                                            </t>-->
                                                         </span>
                                                         <span t-else="" class="o_job_tag">
                                                             Remote
@@ -109,9 +113,9 @@
                                                         <span t-if="job.contract_type_id" class="o_job_tag">
                                                             <t t-out="job.contract_type_id.name"/>
                                                         </span>
-                                                        <span t-if="job.department_id" class="o_job_tag">
-                                                            <t t-out="job.department_id.name"/>
-                                                        </span>
+<!--                                                        <span t-if="job.department_id" class="o_job_tag">-->
+<!--                                                            <t t-out="job.department_id.name"/>-->
+<!--                                                        </span>-->
                                                         <span t-if="job.salary_level_id" class="o_job_tag">
                                                             <i class="fa fa-money me-1"/>
                                                             <t t-out="job.salary_level_id.name"/>

@@ -3,75 +3,83 @@ from odoo import http
 from odoo.http import request
 from odoo.addons.website_hr_recruitment.controllers.main import WebsiteHrRecruitment
 
+SORT_OPTIONS = {
+    'name_asc': 'name asc',
+    'name_desc': 'name desc',
+    'date_desc': 'create_date desc',
+    'date_asc': 'create_date asc',
+}
+
 
 class WebsiteHrRecruitmentSalary(WebsiteHrRecruitment):
 
     @http.route()
-    def jobs(self, page=1, salary_level_id=None, location_id=None, **kwargs):
-        salary_level = None
-        location = None
+    def jobs(self, page=1, salary_level_id=None, state_id=None, ward_id=None, sort=None, **kwargs):
+        salary_level = self._get_record_safe('hr.recruitment.salary.level', salary_level_id)
+        state = self._get_record_safe('res.country.state', state_id)
+        ward = None
+        if ward_id:
+            ward_rec = self._get_record_safe('res.ward', ward_id)
+            if ward_rec and (not state or ward_rec.state_id.id == state.id):
+                ward = ward_rec
 
-        # Lấy salary_level
-        if salary_level_id:
-            try:
-                level = request.env['hr.recruitment.salary.level'].sudo().browse(int(salary_level_id))
-                if level.exists():
-                    salary_level = level
-            except Exception:
-                pass
-
-        # Lấy location
-        if location_id:
-            try:
-                loc = request.env['hr.recruitment.location'].sudo().browse(int(location_id))
-                if loc.exists():
-                    location = loc
-            except Exception:
-                pass
-
-        # Nếu không có filter nào → gọi super bình thường
-        if not salary_level and not location:
-            response = super().jobs(page=page, **kwargs)
-            if hasattr(response, 'qcontext'):
-                response.qcontext['salary_level_id'] = None
-                response.qcontext['location_id'] = None
-            return response
-
-        # Lấy class thực của website object để patch đúng chỗ
+        custom_order = SORT_OPTIONS.get(sort) if sort else None
         website_class = type(request.website)
         original_search = website_class._search_with_fuzzy
-        _salary_level = salary_level
-        _location = location
 
         def patched_search(self_website, search_type, search, limit, order, options):
-            total, details, fuzzy = original_search(self_website, search_type, search, limit, order, options)
+            base_order = custom_order if custom_order else (order or 'id desc')
+            final_order = f'is_pinned desc, {base_order}'
+            total, details, fuzzy = original_search(self_website, search_type, search, limit, final_order, options)
             if details and details[0].get('results'):
                 results = details[0]['results']
-                if _salary_level and _location:
-                    # Cả 2 filter
-                    filtered = results.filtered(
-                        lambda j: j.salary_level_id and j.salary_level_id.id == _salary_level.id
-                                  and j.location_id and j.location_id.id == _location.id
-                    )
-                elif _salary_level:
-                    # Chỉ salary
-                    filtered = results.filtered(
-                        lambda j: j.salary_level_id and j.salary_level_id.id == _salary_level.id
-                    )
-                else:
-                    # Chỉ location
-                    filtered = results.filtered(
-                        lambda j: j.location_id and j.location_id.id == _location.id
-                    )
-                details[0]['results'] = filtered
-                total = len(filtered)
+                if salary_level:
+                    results = results.filtered(lambda j: j.salary_level_id.id == salary_level.id)
+                if state:
+                    results = results.filtered(lambda j: j.state_id.id == state.id)
+                if ward:
+                    results = results.filtered(lambda j: j.ward_id.id == ward.id)
+                details[0]['results'] = results
+                total = len(results)
             return total, details, fuzzy
 
+        # Luôn patch, không còn nhánh early-return bỏ qua patch nữa
         with patch.object(website_class, '_search_with_fuzzy', patched_search):
             response = super().jobs(page=page, **kwargs)
 
         if hasattr(response, 'qcontext'):
-            response.qcontext['salary_level_id'] = salary_level
-            response.qcontext['location_id'] = location
-
+            response.qcontext.update({
+                'salary_level_id': salary_level,
+                'state_id': state,
+                'ward_id': ward,
+                'sort_param': sort,
+            })
         return response
+
+    # lấy record không tồn tại thì coi như không có, ko crash trang.
+    @staticmethod
+    def _get_record_safe(model, rec_id):
+        if not rec_id:
+            return None
+        try:
+            rec = request.env[model].sudo().browse(int(rec_id))
+            return rec if rec.exists() else None
+        except Exception:
+            return None
+
+    @http.route('/hr_recruitment/api/wards', type='http', auth='public', website=True, csrf=False)
+    def api_get_wards(self, state_id=None, **kwargs):
+        import json
+        wards = []
+        if state_id:
+            try:
+                wards = request.env['res.ward'].sudo().search(
+                    [('state_id', '=', int(state_id))], order='name'
+                )
+            except Exception:
+                wards = []
+        data = {'wards': [{'id': w.id, 'name': w.name} for w in wards]}
+        return request.make_response(
+            json.dumps(data),
+            headers=[('Content-Type', 'application/json')]
+        )

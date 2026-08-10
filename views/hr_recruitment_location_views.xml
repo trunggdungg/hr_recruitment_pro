@@ -11,7 +11,7 @@
                 Tạo địa điểm đầu tiên
             </p>
             <p>
-                VD: Hà Nội, Hồ Chí Minh, Remote...
+                VD: Quận 1 - Hồ Chí Minh, Quận Đống Đa - Hà Nội...
             </p>
         </field>
     </record>
@@ -22,10 +22,9 @@
         <field name="model">hr.recruitment.location</field>
         <field name="arch" type="xml">
             <list editable="top" decoration-muted="not active">
-                <field name="sequence" widget="handle"/>
-                <field name="name"/>
-                <field name="city"/>
+                <field name="state_id"/>
                 <field name="district"/>
+                <field name="address"/>
                 <field name="active" widget="boolean_toggle"/>
             </list>
         </field>
@@ -40,17 +39,17 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="name" placeholder="VD: Văn phòng Hà Nội"/>
-                            <field name="city" placeholder="VD: Hà Nội"/>
+                            <field name="state_id" placeholder="Chọn tỉnh/thành phố"/>
                         </group>
                         <group>
                             <field name="district" placeholder="VD: Quận Đống Đa"/>
-                            <field name="sequence"/>
-                            <field name="active" widget="boolean_toggle"/>
                         </group>
                     </group>
                     <group>
                         <field name="address" placeholder="VD: Tầng 10, Tòa nhà ABC, 123 Nguyễn Huệ"/>
+                    </group>
+                    <group>
+                        <field name="active" widget="boolean_toggle"/>
                     </group>
                 </sheet>
             </form>
@@ -63,8 +62,7 @@
         <field name="model">hr.recruitment.location</field>
         <field name="arch" type="xml">
             <search string="Tìm kiếm địa điểm">
-                <field name="name"/>
-                <field name="city"/>
+                <field name="state_id"/>
                 <field name="district"/>
                 <filter string="Active" name="active" domain="[('active', '=', True)]"/>
             </search>
