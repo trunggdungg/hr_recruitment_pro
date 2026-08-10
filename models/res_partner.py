@@ -15,28 +15,21 @@ class ResPartner(models.Model):
 
     recruiter_verified = fields.Boolean(string='Đã xác minh', default=False)
 
-    # Liên kết đến jobs đã đăng
+    # Liên kết đến jobs đã đăng (job.recruiter_id = partner này)
     recruiter_job_ids = fields.One2many(
         'hr.job',
-        compute='_compute_recruiter_jobs',
+        'recruiter_id',
         string='Việc làm đã đăng'
     )
     recruiter_job_count = fields.Integer(
         string='Số tin tuyển dụng',
-        compute='_compute_recruiter_jobs',
+        compute='_compute_recruiter_job_count',
     )
 
-    @api.depends('user_ids')
-    def _compute_recruiter_jobs(self):
+    @api.depends('recruiter_job_ids')
+    def _compute_recruiter_job_count(self):
         for partner in self:
-            # Tìm user liên kết với partner này
-            users = self.env['res.users'].search([('partner_id', '=', partner.id)])
-            if users:
-                jobs = self.env['hr.job'].search([('user_id', 'in', users.ids)])
-            else:
-                jobs = self.env['hr.job']
-            partner.recruiter_job_ids = jobs
-            partner.recruiter_job_count = len(jobs)
+            partner.recruiter_job_count = len(partner.recruiter_job_ids)
 
     @api.constrains('email')
     def _check_unique_email(self):
